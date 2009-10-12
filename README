@@ -1,0 +1,42 @@
+Papervision3D - 3.0
+
+This code is for discussing the core architecture.
+
+Your comments are welcome!
+
+Discussion:
+==============================================
+geometry:
+VertexGeometry holds a mesh's vertices and maintains some Vector.<Number> arrays
+which we can pass easily to Utils3D.projectVectors() 
+
+camera:
+The camera *should* be part of the scenegraph (ie: scene.addChild(camera);)
+
+projection:
+* assuming a righthanded system.
+* uses the default OpenGL projection matrix (gluPerspective)
+  => Flash's native PerspectiveProjection is not used on purpose.
+     => This is up for grabs. Think its not well suited for clipping etc. (I'd rather work in normalized clip space)
+* while traversing the scenegraph matrices are post-multiplied (ie: earth.rotationY++ will orbit sun)
+* we need a mechanism to distinguish between "local" and "global" rotations.
+  => maybe roll / pitch / yaw to make earth spin its own axis (local)
+  => maybe rotationX / Y / Z to make earth spin its parent (sun, global)
+  => or do we? Maybe I'm missing something here.
+* projection is divided in some steps:
+  1. transform all objects including camera to world space
+  2. update camera: calculate its inverse world transform
+     => cull objects by bbox / bshpere outside camera frustum
+  3. transform all objects to view / camera space
+     a] check whether objects are behind, in front or straddling the near-plane, clip if needed
+        => think this can only be done in view / camera space *before* the perspective transform
+     b] cull triangles outside view
+  4. perspective divide (mult the view matrix with the projection matrix)
+  5. draw
+  
+  Clipping can be done in multiple spaces: we can clip triangles in world, view(?) or in screen space.
+  For clipping in screen space we *must* be sure all vertices are in front of the near plane.
+  => ie: all triangles straddling the near plane should have been clipped already
+  Clipping in world space has advantage that we can move from object to screen space in one go.
+  Clipping in view space: not sure, its ideal for clipping to the near plane
+  
