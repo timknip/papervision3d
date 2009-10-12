@@ -1,6 +1,4 @@
 package {
-	import __AS3__.vec.Vector;
-	
 	import flash.display.Graphics;
 	import flash.display.GraphicsTrianglePath;
 	import flash.display.IGraphicsData;
