@@ -68,7 +68,7 @@ package {
 
 			addChild(new Stats());
 
-			camera = new Camera3D(20, 400, 2300, aspect, "Camera01");
+			camera = new Camera3D(20, 400, 2300, "Camera01");
 			pipeline = new BasicPipeline();
 			
 			cube = new Cube(new WireframeMaterial(), 100, "Cube");

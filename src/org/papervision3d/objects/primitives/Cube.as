@@ -15,8 +15,7 @@ package org.papervision3d.objects.primitives
 		/**
 		 * 
 		 */
-		 
-		 private var triGeometry : TriangleGeometry;
+		private var triGeometry : TriangleGeometry;
 		  
 		public function Cube(material:AbstractMaterial, size:Number = 100, name:String=null)
 		{
@@ -25,9 +24,7 @@ package org.papervision3d.objects.primitives
 			geometry = triGeometry = new TriangleGeometry();
 			create(size);
 		}
-		
-		
-		
+
 		/**
 		 * 
 		 */ 

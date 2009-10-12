@@ -13,22 +13,21 @@ package org.papervision3d.objects
 	{
 		/**
 		 * 
-		 */
+		 */ 
+		public var material:AbstractMaterial;
+		public var geometry:VertexGeometry;
 		 
-		 public var material:AbstractMaterial;
-		 public var geometry:VertexGeometry;
-		 
-		 public var viewVertexData :Vector.<Number>;
-		 public var screenVertexData :Vector.<Number>;
-		  
+		public var viewVertexData :Vector.<Number>;
+		public var screenVertexData :Vector.<Number>;
+		
+		/**
+		 * 
+		 */ 
 		public function DisplayObject3D(name:String=null)
 		{
 			super(name);
 			viewVertexData = new Vector.<Number>();
 			screenVertexData = new Vector.<Number>();
-			
 		}
-		
-		
 	}
 }

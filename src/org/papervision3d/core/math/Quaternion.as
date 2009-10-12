@@ -120,6 +120,63 @@ package org.papervision3d.core.math
 			this.w = fCosRoll * fCosPitchCosYaw     + fSinRoll * fSinPitchSinYaw;
 		}
 		
+		public function setFromMatrix(matrix:Matrix3D):void
+		{
+			var quat:Quaternion = this;
+			
+			var v :Vector.<Number> = matrix.rawData; 
+			var s:Number;
+			var q:Array = new Array(4);
+			var i:int, j:int, k:int;
+			
+			var tr :Number = v[0] + v[5] + v[10];
+			
+			// check the diagonal
+			if (tr > 0.0) 
+			{
+				s = Math.sqrt(tr + 1.0);
+				quat.w = s / 2.0;
+				s = 0.5 / s;
+				
+				quat.x = (v[9] - v[6]) * s;
+				quat.y = (v[2] - v[8]) * s;
+				quat.z = (v[4] - v[1]) * s;
+			} 
+			else 
+			{		
+				// diagonal is negative
+				var nxt:Array = [1, 2, 0];
+
+				var m:Array = [
+					[v[0], v[1], v[2], v[3]],
+					[v[4], v[5], v[6], v[7]],
+					[v[8], v[9], v[10], v[11]] 
+				];
+				
+				i = 0;
+
+				if (m[1][1] > m[0][0]) i = 1;
+				if (m[2][2] > m[i][i]) i = 2;
+
+				j = nxt[i];
+				k = nxt[j];
+				s = Math.sqrt((m[i][i] - (m[j][j] + m[k][k])) + 1.0);
+
+				q[i] = s * 0.5;
+
+				if (s != 0.0) s = 0.5 / s;
+
+				q[3] = (m[k][j] - m[j][k]) * s;
+				q[j] = (m[j][i] + m[i][j]) * s;
+				q[k] = (m[k][i] + m[i][k]) * s;
+
+				quat.x = q[0];
+				quat.y = q[1];
+				quat.z = q[2];
+				quat.w = q[3];
+			}
+		}
+		
 		/**
 		 * Modulo.
 		 * 
@@ -214,78 +271,8 @@ package org.papervision3d.core.math
 		{
 			var quat:Quaternion = new Quaternion();
 			
-			var v :Vector.<Number> = matrix.rawData; 
-			var s:Number;
-			var q:Array = new Array(4);
-			var i:int, j:int, k:int;
+			quat.setFromMatrix(matrix);
 			
-			/*
-			 0  1  2  3
-			 4  5  6  7
-			 8  9  10 11
-			 12 13 14 15
-			 
-			 11 12 13 14
-			 21 22 23 24
-			 31 32 33 34
-			 41 42 43 44
-			*/
-			//var tr:Number = matrix.n11 + matrix.n22 + matrix.n33;
-			var tr :Number = v[0] + v[5] + v[10];
-			
-			// check the diagonal
-			if (tr > 0.0) 
-			{
-				s = Math.sqrt(tr + 1.0);
-				quat.w = s / 2.0;
-				s = 0.5 / s;
-				
-				quat.x = (v[9] - v[6]) * s;
-				quat.y = (v[2] - v[8]) * s;
-				quat.z = (v[4] - v[1]) * s;
-				//quat.x = (matrix.n32 - matrix.n23) * s;
-				//quat.y = (matrix.n13 - matrix.n31) * s;
-				//quat.z = (matrix.n21 - matrix.n12) * s;
-			} 
-			else 
-			{		
-				// diagonal is negative
-				var nxt:Array = [1, 2, 0];
-				/*
-				var m:Array = [
-					[matrix.n11, matrix.n12, matrix.n13, matrix.n14],
-					[matrix.n21, matrix.n22, matrix.n23, matrix.n24],
-					[matrix.n31, matrix.n32, matrix.n33, matrix.n34]
-				];
-				*/
-				var m:Array = [
-					[v[0], v[1], v[2], v[3]],
-					[v[4], v[5], v[6], v[7]],
-					[v[8], v[9], v[10], v[11]] 
-				];
-				
-				i = 0;
-
-				if (m[1][1] > m[0][0]) i = 1;
-				if (m[2][2] > m[i][i]) i = 2;
-
-				j = nxt[i];
-				k = nxt[j];
-				s = Math.sqrt((m[i][i] - (m[j][j] + m[k][k])) + 1.0);
-
-				q[i] = s * 0.5;
-
-				if (s != 0.0) s = 0.5 / s;
-
-				q[3] = (m[k][j] - m[j][k]) * s;
-				q[j] = (m[j][i] + m[i][j]) * s;
-				q[k] = (m[k][i] + m[i][k]) * s;
-
-				quat.x = q[0];
-				quat.y = q[1];
-				quat.z = q[2];
-				quat.w = q[3];
-			}
 			return quat;
 		}
 		
