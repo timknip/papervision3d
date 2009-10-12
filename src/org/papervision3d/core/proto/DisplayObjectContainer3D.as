@@ -1,6 +1,5 @@
 package org.papervision3d.core.proto
 {
-	import flash.geom.Matrix3D;
 	import flash.geom.Vector3D;
 	
 	import org.papervision3d.core.ns.pv3d;
@@ -20,6 +19,9 @@ package org.papervision3d.core.proto
 		public var transform :Transform3D;
 		
 		/** */
+		public var cullingState :int;
+		
+		/** */
 		pv3d var _children :Vector.<DisplayObject3D>;
 		
 		/** */
@@ -33,6 +35,7 @@ package org.papervision3d.core.proto
 			this.name = name || "Object" + (_newID++);
 			
 			this.transform = new Transform3D();
+			this.cullingState = 0;
 			
 			_children = new Vector.<DisplayObject3D>();
 		}

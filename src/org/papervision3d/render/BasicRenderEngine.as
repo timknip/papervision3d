@@ -1,12 +1,13 @@
 package org.papervision3d.render
 {
-	import __AS3__.vec.Vector;
-	
+	import flash.errors.IllegalOperationError;
+	import flash.geom.Utils3D;
 	import flash.geom.Vector3D;
 	
 	import org.papervision3d.cameras.Camera3D;
 	import org.papervision3d.core.geom.Triangle;
 	import org.papervision3d.core.geom.provider.TriangleGeometry;
+	import org.papervision3d.core.math.Frustum3D;
 	import org.papervision3d.core.math.Plane3D;
 	import org.papervision3d.core.ns.pv3d;
 	import org.papervision3d.core.render.clipping.ClipFlags;
@@ -32,6 +33,12 @@ package org.papervision3d.render
 		public var clipper :IPolygonClipper;
 		public var viewport :Viewport3D;
 		public var rasterizer : IRasterizer;
+		public var geometry :TriangleGeometry;
+		
+		private var _clipFlags :uint;
+		private var _clippedTriangles :int = 0;
+		private var _culledTriangles :int = 0;
+		private var _totalTriangles :int = 0;
 		
 		public function BasicRenderEngine()
 		{
@@ -45,6 +52,8 @@ package org.papervision3d.render
 			renderList = new DrawableList();
 			clipper = new SutherlandHodgmanClipper();
 			rasterizer = new DefaultRasterizer();
+			
+			_clipFlags = ClipFlags.NEAR;
 		}
 		
 		override public function renderScene(renderData:RenderData):void
@@ -60,220 +69,313 @@ package org.papervision3d.render
 			pipeline.execute(renderData);
  
  			renderList.clear();
-			test(camera, scene);
+			fillRenderList(camera, scene);
 			rasterizer.rasterize(renderList, renderData.viewport);
 		}
 		
 		/**
-		 * Get rid of triangles behind the near plane, clip straddling triangles if needed.
+		 * Fills our renderlist.
+		 * <p>Get rid of triangles behind the near plane, clip straddling triangles if needed.</p>
 		 * 
 		 * @param	camera
 		 * @param	object
 		 */ 
-		private function test(camera:Camera3D, object:DisplayObject3D):void 
+		private function fillRenderList(camera:Camera3D, object:DisplayObject3D):void 
 		{
 			var child :DisplayObject3D;
+			var clipPlanes :Vector.<Plane3D> = camera.frustum.viewClippingPlanes;
 			var v0 :Vector3D = new Vector3D();
 			var v1 :Vector3D = new Vector3D();
 			var v2 :Vector3D = new Vector3D();
 			
-			if (object.geometry is TriangleGeometry)
+			if (object.cullingState == 0 && object.geometry is TriangleGeometry)
 			{
-				var geom :TriangleGeometry = object.geometry as TriangleGeometry;
 				var triangle :Triangle;
 				var inside :Boolean;
 				var flags :int = 0;
 				
-				for each (triangle in geom.triangles)
+				geometry = object.geometry as TriangleGeometry;
+				
+				for each (triangle in geometry.triangles)
 				{
-					//trace("got a triangle");
 					triangle.clipFlags = 0;
 					triangle.visible = false;
 					
+					_totalTriangles++;
+					
 					// get vertices in view / camera space
-					v0.x = geom.viewVertexData[ triangle.v0.vectorIndexX ];	
-					v0.y = geom.viewVertexData[ triangle.v0.vectorIndexY ];
-					v0.z = geom.viewVertexData[ triangle.v0.vectorIndexZ ];
-					v1.x = geom.viewVertexData[ triangle.v1.vectorIndexX ];	
-					v1.y = geom.viewVertexData[ triangle.v1.vectorIndexY ];
-					v1.z = geom.viewVertexData[ triangle.v1.vectorIndexZ ];
-					v2.x = geom.viewVertexData[ triangle.v2.vectorIndexX ];	
-					v2.y = geom.viewVertexData[ triangle.v2.vectorIndexY ];
-					v2.z = geom.viewVertexData[ triangle.v2.vectorIndexZ ];
+					v0.x = geometry.viewVertexData[ triangle.v0.vectorIndexX ];	
+					v0.y = geometry.viewVertexData[ triangle.v0.vectorIndexY ];
+					v0.z = geometry.viewVertexData[ triangle.v0.vectorIndexZ ];
+					v1.x = geometry.viewVertexData[ triangle.v1.vectorIndexX ];	
+					v1.y = geometry.viewVertexData[ triangle.v1.vectorIndexY ];
+					v1.z = geometry.viewVertexData[ triangle.v1.vectorIndexZ ];
+					v2.x = geometry.viewVertexData[ triangle.v2.vectorIndexX ];	
+					v2.y = geometry.viewVertexData[ triangle.v2.vectorIndexY ];
+					v2.z = geometry.viewVertexData[ triangle.v2.vectorIndexZ ];
 					
-					flags = 0;
-					if (v0.z >= -camera.near) flags |= 1;
-					if (v1.z >= -camera.near) flags |= 2;
-					if (v2.z >= -camera.near) flags |= 4;
-
-					if (flags == 7 )
+					// setup clipflags
+					if (_clipFlags & ClipFlags.NEAR)
 					{
-						// behind near plane
-						continue;
-					}
-					else if (flags)
-					{
-						// clip candidate
-						triangle.clipFlags |= ClipFlags.NEAR;
+						flags = getClipFlags(clipPlanes[Frustum3D.NEAR], v0, v1, v2);
+						if (flags == 7 ) { _culledTriangles++; continue; }
+						else if (flags) { triangle.clipFlags |= ClipFlags.NEAR; }
 					}
 					
-					flags = 0;
-					if (v0.z <= -camera.far) flags |= 1;
-					if (v1.z <= -camera.far) flags |= 2;
-					if (v2.z <= -camera.far) flags |= 4;
-					
-					if (flags == 7 )
+					if (_clipFlags & ClipFlags.FAR)
 					{
-						// behind far plane
-						continue;
-					}
-					else if (flags)
-					{
-						// clip candidate
-						triangle.clipFlags |= ClipFlags.FAR;
+						flags = getClipFlags(clipPlanes[Frustum3D.FAR], v0, v1, v2);
+						if (flags == 7 ) { _culledTriangles++; continue; }
+						else if (flags) { triangle.clipFlags |= ClipFlags.FAR; }
 					}
 					
-					triangle.visible = (triangle.clipFlags == 0);
+					if (_clipFlags & ClipFlags.LEFT)
+					{
+						flags = getClipFlags(clipPlanes[Frustum3D.LEFT], v0, v1, v2);
+						if (flags == 7 ) { _culledTriangles++; continue; }
+						else if (flags) { triangle.clipFlags |= ClipFlags.LEFT; }
+					}
 					
-					if (triangle.visible)
-					{	
+					if (_clipFlags & ClipFlags.RIGHT)
+					{
+						flags = getClipFlags(clipPlanes[Frustum3D.RIGHT], v0, v1, v2);
+						if (flags == 7 ) { _culledTriangles++; continue; }
+						else if (flags) { triangle.clipFlags |= ClipFlags.RIGHT; }
+					}
+					
+					if (_clipFlags & ClipFlags.TOP)
+					{
+						flags = getClipFlags(clipPlanes[Frustum3D.TOP], v0, v1, v2);
+						if (flags == 7 ) { _culledTriangles++; continue; }
+						else if (flags) { triangle.clipFlags |= ClipFlags.TOP; }
+					}
+					
+					if (_clipFlags & ClipFlags.BOTTOM)
+					{
+						flags = getClipFlags(clipPlanes[Frustum3D.BOTTOM], v0, v1, v2);
+						if (flags == 7 ) { _culledTriangles++; continue; }
+						else if (flags) { triangle.clipFlags |= ClipFlags.BOTTOM };
+					}
+					
+					if (triangle.clipFlags == 0)
+					{
+						// triangle completely in view
 						// select screen vertex data
-						v0.x = geom.screenVertexData[ triangle.v0.screenIndexX ];	
-						v0.y = geom.screenVertexData[ triangle.v0.screenIndexY ];
-						v1.x = geom.screenVertexData[ triangle.v1.screenIndexX ];	
-						v1.y = geom.screenVertexData[ triangle.v1.screenIndexY ];
-						v2.x = geom.screenVertexData[ triangle.v2.screenIndexX ];	
-						v2.y = geom.screenVertexData[ triangle.v2.screenIndexY ];
+						v0.x = geometry.screenVertexData[ triangle.v0.screenIndexX ];	
+						v0.y = geometry.screenVertexData[ triangle.v0.screenIndexY ];
+						v1.x = geometry.screenVertexData[ triangle.v1.screenIndexX ];	
+						v1.y = geometry.screenVertexData[ triangle.v1.screenIndexY ];
+						v2.x = geometry.screenVertexData[ triangle.v2.screenIndexX ];	
+						v2.y = geometry.screenVertexData[ triangle.v2.screenIndexY ];
 						
-						var left :int = 0;
-						var right :int = 0;
-						var top :int = 0;
-						var bottom :int = 0;
+						// Simple backface culling.
+						if ((v2.x - v0.x) * (v1.y - v0.y) - (v2.y - v0.y) * (v1.x - v0.x) > 0)
+						{
+							_culledTriangles ++;
+							continue;
+						}
 						
-						if (v0.x < -1) left++;
-						if (v1.x < -1) left++;
-						if (v2.x < -1) left++;
-						if (v0.x > 1) right++;
-						if (v1.x > 1) right++;
-						if (v2.x > 1) right++;
-						if (v0.y > 1) top++;
-						if (v1.y > 1) top++;
-						if (v2.y > 1) top++;
-						if (v0.y < -1) bottom++;
-						if (v1.y < -1) bottom++;
-						if (v2.y < -1) bottom++;
+						var drawable :TriangleDrawable = triangle.drawable as TriangleDrawable || new TriangleDrawable();
+						drawable.screenZ = (v0.z + v1.z + v2.z) / 3;
+						drawable.x0 = v0.x;
+						drawable.y0 = v0.y;
+						drawable.x1 = v1.x;
+						drawable.y1 = v1.y;
+						drawable.x2 = v2.x;
+						drawable.y2 = v2.y;
+						drawable.material = object.material;
 						
-						if (left == 0 && right == 0 && top == 0 && bottom == 0)
-						{
-							var drawable :TriangleDrawable = triangle.drawable as TriangleDrawable || new TriangleDrawable();
-							drawable.screenZ = (v0.z + v1.z + v2.z) / 3;
-							drawable.x0 = v0.x;
-							drawable.y0 = v0.y;
-							drawable.x1 = v1.x;
-							drawable.y1 = v1.y;
-							drawable.x2 = v2.x;
-							drawable.y2 = v2.y;
-							drawable.material = object.material;
-
-							renderList.addDrawable(drawable);
-						}
-						else if (left == 3 || right == 3 || top == 3 || bottom == 3)
-						{
-							triangle.visible = false;
-						}
-						else
-						{
-							if (left > 0) flags |= ClipFlags.LEFT;
-							if (right > 0) flags |= ClipFlags.RIGHT;
-							if (top > 0) flags |= ClipFlags.TOP;
-							if (bottom > 0) flags |= ClipFlags.BOTTOM;
-							
-							//f( right > 0)
-							clipTriangle(camera, triangle, v0, v1, v2, flags, object.material);
-						}
+						renderList.addDrawable(drawable);
+						
+						triangle.drawable = drawable;
 					}
+					else
+					{
+						clipViewTriangle(camera, triangle, object.material, v0, v1, v2);
+					}	
 				}
 			}
 			
 			for each (child in object._children)
 			{
-				test(camera, child);
+				fillRenderList(camera, child);
 			}
 		}
 		
-		private function clipTriangle(camera:Camera3D, triangle:Triangle, v0:Vector3D, v1:Vector3D, v2:Vector3D, clipFlags:int, material:AbstractMaterial):void
-		{
-			var inV :Vector.<Number> = Vector.<Number>([v0.x, v0.y, 0, v1.x, v1.y, 0, v2.x, v2.y, 0]);
+		/**
+		 * Clips a triangle in view / camera space. Typically used for the near and far planes.
+		 * 
+		 * @param	camera
+		 * @param	triangle
+		 * @param	v0
+		 * @param	v1
+		 * @param 	v2
+		 */ 
+		private function clipViewTriangle(camera:Camera3D, triangle:Triangle, material:AbstractMaterial, v0:Vector3D, v1:Vector3D, v2:Vector3D):void
+		{		
+			var plane :Plane3D = camera.frustum.viewClippingPlanes[ Frustum3D.NEAR ];
+			var inV :Vector.<Number> = Vector.<Number>([v0.x, v0.y, v0.z, v1.x, v1.y, v1.z, v2.x, v2.y, v2.z]);
 			var inUVT :Vector.<Number> = Vector.<Number>([0, 0, 0, 0, 0, 0, 0, 0, 0]);
 			var outV :Vector.<Number> = new Vector.<Number>();
 			var outUVT :Vector.<Number> = new Vector.<Number>();
-			var svd :Vector.<Number> = new Vector.<Number>();
 			
-			var plane :Plane3D = Plane3D.fromCoefficients(1, 0, 0, -1);
-		
-			if (clipFlags & ClipFlags.LEFT)
+			_clippedTriangles++;
+			
+			if (triangle.clipFlags & ClipFlags.NEAR)
 			{
-				plane.setCoefficients(-1, 0, 0, 1);
-				clipper.clipPolygonToPlane(inV, inUVT, outV, outUVT, plane);
-				inV = outV;
-				inUVT = outUVT;
-			}
-
-			if (clipFlags & ClipFlags.RIGHT)
-			{
-				outV = new Vector.<Number>();
-				outUVT = new Vector.<Number>();
-				plane.setCoefficients(1, 0, 0, 1);
-				clipper.clipPolygonToPlane(inV, inUVT, outV, outUVT, plane);
-				inV = outV;
-				inUVT = outUVT;
-			}
-
-			if (clipFlags & ClipFlags.TOP)
-			{
-				outV = new Vector.<Number>();
-				outUVT = new Vector.<Number>();
-				plane.setCoefficients(0, -1, 0, 1);
 				clipper.clipPolygonToPlane(inV, inUVT, outV, outUVT, plane);
 				inV = outV;
 				inUVT = outUVT;
 			}
 			
-			if (clipFlags & ClipFlags.BOTTOM)
+			if (triangle.clipFlags & ClipFlags.FAR)
 			{
+				plane = camera.frustum.viewClippingPlanes[ Frustum3D.FAR ];
 				outV = new Vector.<Number>();
 				outUVT = new Vector.<Number>();
-				plane.setCoefficients(0, 1, 0, 1);
 				clipper.clipPolygonToPlane(inV, inUVT, outV, outUVT, plane);
 				inV = outV;
 				inUVT = outUVT;
 			}
 			
-			svd = inV;
+			if (triangle.clipFlags & ClipFlags.LEFT)
+			{
+				plane = camera.frustum.viewClippingPlanes[ Frustum3D.LEFT ];
+				outV = new Vector.<Number>();
+				outUVT = new Vector.<Number>();
+				clipper.clipPolygonToPlane(inV, inUVT, outV, outUVT, plane);
+				inV = outV;
+				inUVT = outUVT;
+			}
+			
+			if (triangle.clipFlags & ClipFlags.RIGHT)
+			{
+				plane = camera.frustum.viewClippingPlanes[ Frustum3D.RIGHT ];
+				outV = new Vector.<Number>();
+				outUVT = new Vector.<Number>();
+				clipper.clipPolygonToPlane(inV, inUVT, outV, outUVT, plane);
+				inV = outV;
+				inUVT = outUVT;
+			}
+			
+			if (triangle.clipFlags & ClipFlags.TOP)
+			{
+				plane = camera.frustum.viewClippingPlanes[ Frustum3D.TOP ];
+				outV = new Vector.<Number>();
+				outUVT = new Vector.<Number>();
+				clipper.clipPolygonToPlane(inV, inUVT, outV, outUVT, plane);
+				inV = outV;
+				inUVT = outUVT;
+			}
+			
+			if (triangle.clipFlags & ClipFlags.BOTTOM)
+			{
+				plane = camera.frustum.viewClippingPlanes[ Frustum3D.BOTTOM ];
+				outV = new Vector.<Number>();
+				outUVT = new Vector.<Number>();
+				clipper.clipPolygonToPlane(inV, inUVT, outV, outUVT, plane);
+				inV = outV;
+				inUVT = outUVT;
+			}
+			
+			Utils3D.projectVectors(camera.projectionMatrix, inV, outV, inUVT);
 			
 			var numTriangles : int = 1 + ((inV.length / 3)-3);
-			var i :int, i2 :int, i3 :int;
+			var i:int, i2 :int, i3 :int;
+
+			_totalTriangles += numTriangles - 1;
 			
 			for(i = 0; i < numTriangles; i++)
 			{
 				i2 = i * 2;
 				i3 = i * 3; 
 				
+				v0.x = outV[0];
+				v0.y = outV[1];
+				v1.x = outV[i2+2];
+				v1.y = outV[i2+3];
+				v2.x = outV[i2+4];
+				v2.y = outV[i2+5];
+				
+				if ((v2.x - v0.x) * (v1.y - v0.y) - (v2.y - v0.y) * (v1.x - v0.x) > 0)
+				{
+					_culledTriangles ++;
+					continue;
+				}
+				
 				var drawable :TriangleDrawable = new TriangleDrawable();
 							
-				drawable.x0 = svd[0];
-				drawable.y0 = svd[1];
+				drawable.x0 = v0.x;
+				drawable.y0 = v0.y;
 				
-				drawable.x1 = svd[i3+3];
-				drawable.y1 = svd[i3+4];
+				drawable.x1 = v1.x;
+				drawable.y1 = v1.y;
 				
-				drawable.x2 = svd[i3+6];
-				drawable.y2 = svd[i3+7];
-				drawable.material = material; 
-				drawable.screenZ = (v0.z + v1.z + v2.z) / 3;
+				drawable.x2 = v2.x;
+				drawable.y2 = v2.y;	
+				drawable.screenZ = (inV[2]+inV[i3+5]+inV[i3+8])/3;
+				drawable.material = material;
 				
 				renderList.addDrawable(drawable);
 			}
 		}
+		
+		/**
+		 * 
+		 */ 
+		private function getClipFlags(plane:Plane3D, v0:Vector3D, v1:Vector3D, v2:Vector3D):int
+		{
+			var flags :int = 0;
+			if ( plane.distance(v0) < 0 ) flags |= 1;
+			if ( plane.distance(v1) < 0 ) flags |= 2;
+			if ( plane.distance(v2) < 0 ) flags |= 4;
+			return flags;
+		}
+		
+		/**
+		 * Clip flags.
+		 * 
+		 * @see org.papervision3d.core.render.clipping.ClipFlags
+		 */
+		public function get clipFlags():int
+		{
+			return _clipFlags;
+		}
+		
+		public function set clipFlags(value:int):void
+		{
+			if (value >= 0 && value <= ClipFlags.ALL)
+			{
+				_clipFlags = value;
+			}
+			else
+			{
+				throw new IllegalOperationError("clipFlags should be a value between 0 and " + ClipFlags.ALL + "\nsee org.papervision3d.core.render.clipping.ClipFlags");
+			}
+		}
+		
+		/**
+		 * 
+		 */
+		public function get clippedTriangles():int
+		{
+			return _clippedTriangles;
+		} 
+		
+		/**
+		 * 
+		 */
+		public function get culledTriangles():int
+		{
+			return _culledTriangles;
+		} 
+		
+		/**
+		 * 
+		 */
+		public function get totalTriangles():int
+		{
+			return _totalTriangles;
+		} 
 	}
 }

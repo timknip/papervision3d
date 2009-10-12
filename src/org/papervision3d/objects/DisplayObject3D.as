@@ -15,9 +15,20 @@ package org.papervision3d.objects
 		 * 
 		 */ 
 		public var material:AbstractMaterial;
+		
+		/**
+		 * 
+		 */ 
 		public var geometry:VertexGeometry;
-		 
+		
+		/**
+		 * 
+		 */ 
 		public var viewVertexData :Vector.<Number>;
+		
+		/**
+		 * 
+		 */ 
 		public var screenVertexData :Vector.<Number>;
 		
 		/**
