@@ -3,14 +3,19 @@ package org.papervision3d.objects.primitives
 	import org.papervision3d.core.geom.Triangle;
 	import org.papervision3d.core.geom.UVCoord;
 	import org.papervision3d.core.geom.Vertex;
+	import org.papervision3d.core.geom.provider.TriangleGeometry;
+	import org.papervision3d.materials.AbstractMaterial;
 	import org.papervision3d.objects.DisplayObject3D;
 
 	public class Plane extends DisplayObject3D
 	{
-		public function Plane(name:String=null, width:Number=100, height:Number=100, segX:Number=1, segY:Number=1)
+		public function Plane(material:AbstractMaterial, width:Number=100, height:Number=100, segX:Number=1, segY:Number=1, name:String=null)
 		{
 			super(name);
-		
+			
+			this.material = material;
+			this.geometry = new TriangleGeometry();
+			
 			create(width, height, segX, segY);
 		}
 		
@@ -44,12 +49,12 @@ package org.papervision3d.objects.primitives
 					var uv2 :UVCoord = new UVCoord(1, 0);
 					var uv3 :UVCoord = new UVCoord(1, 1);
 					
-					addTriangle( new Triangle(v0, v1, v2, uv0, uv1, uv2) );
-					addTriangle( new Triangle(v0, v2, v3, uv0, uv2, uv3) );
+					TriangleGeometry(geometry).addTriangle( new Triangle(material, v0, v1, v2, uv0, uv1, uv2) );
+					TriangleGeometry(geometry).addTriangle( new Triangle(material, v0, v2, v3, uv0, uv2, uv3) );
 				}
 			}
 			
-			mergeVertices();
+			TriangleGeometry(geometry).mergeVertices();
 		} 
 	}
 }

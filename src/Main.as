@@ -1,7 +1,4 @@
 package {
-	import flash.display.Graphics;
-	import flash.display.GraphicsTrianglePath;
-	import flash.display.IGraphicsData;
 	import flash.display.Sprite;
 	import flash.display.StageAlign;
 	import flash.display.StageQuality;
@@ -13,18 +10,16 @@ package {
 	import net.hires.debug.Stats;
 	
 	import org.papervision3d.cameras.Camera3D;
-	import org.papervision3d.core.geom.Triangle;
-	import org.papervision3d.core.geom.provider.TriangleGeometry;
 	import org.papervision3d.core.geom.provider.VertexGeometry;
 	import org.papervision3d.core.ns.pv3d;
 	import org.papervision3d.core.render.clipping.SutherlandHodgmanClipper;
 	import org.papervision3d.core.render.data.RenderData;
-	import org.papervision3d.core.render.draw.items.TriangleDrawable;
 	import org.papervision3d.core.render.draw.list.DrawableList;
 	import org.papervision3d.core.render.pipeline.BasicPipeline;
 	import org.papervision3d.materials.WireframeMaterial;
 	import org.papervision3d.objects.DisplayObject3D;
 	import org.papervision3d.objects.primitives.Cube;
+	import org.papervision3d.objects.primitives.Plane;
 	import org.papervision3d.render.BasicRenderEngine;
 	import org.papervision3d.view.Viewport3D;
 
@@ -66,7 +61,7 @@ package {
 
 			addChild(new Stats());
 
-			camera = new Camera3D(20, 400, 2300, "Camera01");
+			camera = new Camera3D(50, 400, 2300, "Camera01");
 			pipeline = new BasicPipeline();
 			
 			cube = new Cube(new WireframeMaterial(), 100, "Cube");
@@ -103,6 +98,8 @@ package {
 			
 			addChild(renderData.viewport);
 			
+			var plane :Plane = new Plane(new WireframeMaterial(0x0000FF), 400, 400, 1, 1, "Plane0");
+			scene.addChild(plane);
 		//	render();
 			
 			var clipper:SutherlandHodgmanClipper;

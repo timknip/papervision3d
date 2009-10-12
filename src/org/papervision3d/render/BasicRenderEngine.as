@@ -183,7 +183,7 @@ package org.papervision3d.render
 						drawable.y1 = v1.y;
 						drawable.x2 = v2.x;
 						drawable.y2 = v2.y;
-						drawable.material = object.material;
+						drawable.material = triangle.material;
 						
 						renderList.addDrawable(drawable);
 						
@@ -191,7 +191,7 @@ package org.papervision3d.render
 					}
 					else
 					{
-						clipViewTriangle(camera, triangle, object.material, v0, v1, v2);
+						clipViewTriangle(camera, triangle, v0, v1, v2);
 					}	
 				}
 			}
@@ -211,7 +211,7 @@ package org.papervision3d.render
 		 * @param	v1
 		 * @param 	v2
 		 */ 
-		private function clipViewTriangle(camera:Camera3D, triangle:Triangle, material:AbstractMaterial, v0:Vector3D, v1:Vector3D, v2:Vector3D):void
+		private function clipViewTriangle(camera:Camera3D, triangle:Triangle, v0:Vector3D, v1:Vector3D, v2:Vector3D):void
 		{		
 			var plane :Plane3D = camera.frustum.viewClippingPlanes[ Frustum3D.NEAR ];
 			var inV :Vector.<Number> = Vector.<Number>([v0.x, v0.y, v0.z, v1.x, v1.y, v1.z, v2.x, v2.y, v2.z]);
@@ -314,7 +314,7 @@ package org.papervision3d.render
 				drawable.x2 = v2.x;
 				drawable.y2 = v2.y;	
 				drawable.screenZ = (inV[2]+inV[i3+5]+inV[i3+8])/3;
-				drawable.material = material;
+				drawable.material = triangle.material;
 				
 				renderList.addDrawable(drawable);
 			}
