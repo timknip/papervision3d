@@ -109,6 +109,7 @@ package org.papervision3d.render
 		 */ 
 		private function fillRenderList(camera:Camera3D, object:DisplayObject3D):void 
 		{
+			var renderer : ObjectRenderer = object.renderer;
 			var child :DisplayObject3D;
 			var clipPlanes :Vector.<Plane3D> = camera.frustum.viewClippingPlanes;
 			var v0 :Vector3D = new Vector3D();
@@ -127,7 +128,6 @@ package org.papervision3d.render
 				var flags :int = 0;
 				
 				geometry = object.renderer.geometry as TriangleGeometry;
-				var renderer : ObjectRenderer = object.renderer;
 				
 				for each (triangle in geometry.triangles)
 				{
@@ -239,19 +239,19 @@ package org.papervision3d.render
 					}	
 				}
 			}
-			else if (object.cullingState == 0 && object.geometry is LineGeometry)
+			else if (object.cullingState == 0 && object.renderer.geometry is LineGeometry)
 			{
-				var lineGeometry:LineGeometry = LineGeometry(object.geometry);
+				var lineGeometry:LineGeometry = LineGeometry(object.renderer.geometry);
 				var line :Line;
 					
 				for each (line in lineGeometry.lines)
 				{
 					var lineDrawable :LineDrawable = line.drawable as LineDrawable || new LineDrawable();
 					
-					sv0.x = lineGeometry.screenVertexData[ line.v0.screenIndexX ];	
-					sv0.y = lineGeometry.screenVertexData[ line.v0.screenIndexY ];
-					sv1.x = lineGeometry.screenVertexData[ line.v1.screenIndexX ];	
-					sv1.y = lineGeometry.screenVertexData[ line.v1.screenIndexY ];
+					sv0.x = renderer.screenVertexData[ line.v0.screenIndexX ];	
+					sv0.y = renderer.screenVertexData[ line.v0.screenIndexY ];
+					sv1.x = renderer.screenVertexData[ line.v1.screenIndexX ];	
+					sv1.y = renderer.screenVertexData[ line.v1.screenIndexY ];
 				
 					lineDrawable.x0 = sv0.x;
 					lineDrawable.y0 = sv0.y;

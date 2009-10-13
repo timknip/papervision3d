@@ -16,8 +16,8 @@ package org.papervision3d.objects
 		 * 
 		 */
 		 
-		 public var material:AbstractMaterial;
-		 public var renderer:ObjectRenderer;
+		public var material:AbstractMaterial;
+		public var renderer:ObjectRenderer;
 		  
 		public function DisplayObject3D(name:String=null)
 		{

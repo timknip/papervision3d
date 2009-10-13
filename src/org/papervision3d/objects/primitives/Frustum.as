@@ -4,6 +4,7 @@ package org.papervision3d.objects.primitives
 	import org.papervision3d.core.geom.Line;
 	import org.papervision3d.core.geom.Vertex;
 	import org.papervision3d.core.geom.provider.LineGeometry;
+	import org.papervision3d.core.geom.provider.VertexGeometry;
 	import org.papervision3d.core.math.utils.MathUtil;
 	import org.papervision3d.materials.AbstractMaterial;
 	import org.papervision3d.objects.DisplayObject3D;
@@ -32,7 +33,7 @@ package org.papervision3d.objects.primitives
 			super(name);
 			
 			this.material = material;	
-			this.geometry = new LineGeometry();
+			this.renderer.geometry = new LineGeometry();
 			
 			init();
 		}
@@ -42,7 +43,9 @@ package org.papervision3d.objects.primitives
 		 */
 		protected function init():void
 		{
-			var lineGeometry :LineGeometry = LineGeometry(this.geometry);
+			var geometry :VertexGeometry = renderer.geometry;
+			 
+			var lineGeometry :LineGeometry = LineGeometry(renderer.geometry);
 			
 			nc = geometry.addVertex(new Vertex());
 			fc = geometry.addVertex(new Vertex());
@@ -78,6 +81,7 @@ package org.papervision3d.objects.primitives
 		 */ 
 		public function update(camera:Camera3D):void
 		{
+			var geometry :VertexGeometry = renderer.geometry;
 			var fov :Number = camera.fov;
 			var near :Number = camera.near;
 			var far :Number = camera.far;
