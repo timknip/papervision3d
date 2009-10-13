@@ -72,7 +72,7 @@ package {
 			tf.multiline = true;
 			tf.text = "Papervision3D - version 3.0";
 			
-			camera = new Camera3D(50, 400, 2300, "Camera01");
+			camera = new Camera3D(30, 400, 2300, "Camera01");
 			pipeline = new BasicPipeline();
 			
 			cube = new Cube(new WireframeMaterial(), 100, "Cube");
@@ -132,7 +132,9 @@ package {
 			cube.getChildByName("blue").rotationZ += 4;
 			
 			cube.getChildByName("blue").transform.eulerAngles.y--;
-			cube.getChildByName("green").lookAt( cube.getChildByName("red") );
+			cube.getChildByName("green").lookAt( cube.getChildByName("blue") );
+			
+			cube.lookAt(cube.getChildByName("blue"));
 			
 			cube.getChildByName("red").transform.eulerAngles.z++;
 		//	cube.getChildByName("red").transform.eulerAngles.y--;

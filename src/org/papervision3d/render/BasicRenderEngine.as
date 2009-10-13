@@ -9,6 +9,7 @@ package org.papervision3d.render
 	import org.papervision3d.core.geom.provider.TriangleGeometry;
 	import org.papervision3d.core.math.Frustum3D;
 	import org.papervision3d.core.math.Plane3D;
+	import org.papervision3d.core.memory.pool.DrawablePool;
 	import org.papervision3d.core.ns.pv3d;
 	import org.papervision3d.core.render.clipping.ClipFlags;
 	import org.papervision3d.core.render.clipping.IPolygonClipper;
@@ -42,12 +43,7 @@ package org.papervision3d.render
 		
 		private var _clipFlags :uint;
 		
-		private var _v0 :Vector3D;
-		private var _v1 :Vector3D;
-		private var _v2 :Vector3D;
-		private var _sv0 :Vector3D;
-		private var _sv1 :Vector3D;
-		private var _sv2 :Vector3D;
+		private var _drawablePool :DrawablePool;
 		
 		/**
 		 * 
@@ -72,12 +68,7 @@ package org.papervision3d.render
 			
 			_clipFlags = ClipFlags.NEAR;
 			
-			_v0 = new Vector3D();
-			_v1 = new Vector3D();
-			_v2 = new Vector3D();
-			_sv0 = new Vector3D();
-			_sv1 = new Vector3D();
-			_sv2 = new Vector3D();
+			_drawablePool = new DrawablePool(TriangleDrawable);
 		}
 		
 		/**
@@ -96,6 +87,8 @@ package org.papervision3d.render
  
  			renderList.clear();
  			stats.clear();
+ 			
+ 			_drawablePool.reset();
  			
 			fillRenderList(camera, scene);
 			
@@ -116,9 +109,9 @@ package org.papervision3d.render
 			var v0 :Vector3D = new Vector3D();
 			var v1 :Vector3D = new Vector3D();
 			var v2 :Vector3D = new Vector3D();
-			var _sv0 :Vector3D = new Vector3D();
-			var _sv1 :Vector3D = new Vector3D();
-			var _sv2 :Vector3D = new Vector3D();
+			var sv0 :Vector3D = new Vector3D();
+			var sv1 :Vector3D = new Vector3D();
+			var sv2 :Vector3D = new Vector3D();
 			
 			stats.totalObjects++;
 			
@@ -148,8 +141,9 @@ package org.papervision3d.render
 					v2.y = geometry.viewVertexData[ triangle.v2.vectorIndexY ];
 					v2.z = geometry.viewVertexData[ triangle.v2.vectorIndexZ ];
 					
-					// setup clipflags
-					// first test the near plane as verts behind near project to infinity.
+					// Setup clipflags for the triangle (detect whether the tri is in, out or straddling 
+					// the frustum).
+					// First test the near plane, as verts behind near project to infinity.
 					if (_clipFlags & ClipFlags.NEAR)
 					{
 						flags = getClipFlags(clipPlanes[Frustum3D.NEAR], v0, v1, v2);
@@ -157,28 +151,28 @@ package org.papervision3d.render
 						else if (flags) { triangle.clipFlags |= ClipFlags.NEAR; }
 					}
 					
-					// passed the near test loosely, verts may have projected to infinity
-					// we do it here, cause - paranoia - even these array accesses may cost us
-					_sv0.x = geometry.screenVertexData[ triangle.v0.screenIndexX ];	
-					_sv0.y = geometry.screenVertexData[ triangle.v0.screenIndexY ];
-					_sv1.x = geometry.screenVertexData[ triangle.v1.screenIndexX ];	
-					_sv1.y = geometry.screenVertexData[ triangle.v1.screenIndexY ];
-					_sv2.x = geometry.screenVertexData[ triangle.v2.screenIndexX ];	
-					_sv2.y = geometry.screenVertexData[ triangle.v2.screenIndexY ];
+					// Grab the screem vertices
+					sv0.x = geometry.screenVertexData[ triangle.v0.screenIndexX ];	
+					sv0.y = geometry.screenVertexData[ triangle.v0.screenIndexY ];
+					sv1.x = geometry.screenVertexData[ triangle.v1.screenIndexX ];	
+					sv1.y = geometry.screenVertexData[ triangle.v1.screenIndexY ];
+					sv2.x = geometry.screenVertexData[ triangle.v2.screenIndexX ];	
+					sv2.y = geometry.screenVertexData[ triangle.v2.screenIndexY ];
 					
-					// when *not* straddling the near plane we can safely test for backfaces
-					// ie: lets not clip backfacing triangles!
+					// When *not* straddling the near plane we can safely test for backfacing triangles 
+					// (as we're sure the infinity case is filtered out).
+					// Hence we can have an early out by a simple backface test.
 					if (triangle.clipFlags != ClipFlags.NEAR)
 					{
-						// Simple backface culling.
-						if ((_sv2.x - _sv0.x) * (_sv1.y - _sv0.y) - (_sv2.y - _sv0.y) * (_sv1.x - _sv0.x) > 0)
+						if ((sv2.x - sv0.x) * (sv1.y - sv0.y) - (sv2.y - sv0.y) * (sv1.x - sv0.x) > 0)
 						{
 							stats.culledTriangles ++;
 							continue;
 						}
 					}
 					
-					// okay, continue setting up clipflags
+					// Okay, all vertices are in front of the near plane and backfacing tris are gone.
+					// Continue setting up clipflags
 					if (_clipFlags & ClipFlags.FAR)
 					{
 						flags = getClipFlags(clipPlanes[Frustum3D.FAR], v0, v1, v2);
@@ -216,15 +210,15 @@ package org.papervision3d.render
 						
 					if (triangle.clipFlags == 0)
 					{
-						// triangle completely in view
+						// Triangle completely inside the (view) frustum
 						var drawable :TriangleDrawable = triangle.drawable as TriangleDrawable || new TriangleDrawable();
 						drawable.screenZ = (v0.z + v1.z + v2.z) / 3;
-						drawable.x0 = _sv0.x;
-						drawable.y0 = _sv0.y;
-						drawable.x1 = _sv1.x;
-						drawable.y1 = _sv1.y;
-						drawable.x2 = _sv2.x;
-						drawable.y2 = _sv2.y;
+						drawable.x0 = sv0.x;
+						drawable.y0 = sv0.y;
+						drawable.x1 = sv1.x;
+						drawable.y1 = sv1.y;
+						drawable.x2 = sv2.x;
+						drawable.y2 = sv2.y;
 						drawable.material = triangle.material;
 						
 						renderList.addDrawable(drawable);
@@ -233,11 +227,13 @@ package org.papervision3d.render
 					}
 					else
 					{
+						// Triangle straddles some plane of the (view) camera frustum, we need clip 'm
 						clipViewTriangle(camera, triangle, v0, v1, v2);
 					}	
 				}
 			}
 			
+			// Recurse
 			for each (child in object._children)
 			{
 				fillRenderList(camera, child);
@@ -345,7 +341,7 @@ package org.papervision3d.render
 					continue;
 				}
 				
-				var drawable :TriangleDrawable = new TriangleDrawable();
+				var drawable :TriangleDrawable = _drawablePool.drawable as TriangleDrawable;
 							
 				drawable.x0 = v0.x;
 				drawable.y0 = v0.y;
