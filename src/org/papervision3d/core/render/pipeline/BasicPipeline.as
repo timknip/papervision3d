@@ -1,5 +1,7 @@
 package org.papervision3d.core.render.pipeline
 {
+	import __AS3__.vec.Vector;
+	
 	import flash.geom.Matrix3D;
 	import flash.geom.Rectangle;
 	import flash.geom.Utils3D;
@@ -7,6 +9,7 @@ package org.papervision3d.core.render.pipeline
 	
 	import org.papervision3d.cameras.Camera3D;
 	import org.papervision3d.core.geom.provider.VertexGeometry;
+	import org.papervision3d.core.math.utils.MathUtil;
 	import org.papervision3d.core.math.utils.MatrixUtil;
 	import org.papervision3d.core.ns.pv3d;
 	import org.papervision3d.core.proto.Transform3D;
@@ -19,6 +22,7 @@ package org.papervision3d.core.render.pipeline
 		
 		private var _scheduledLookAt :Vector.<DisplayObject3D>;
 		private var _lookAtMatrix :Matrix3D;
+		private var _invWorldMatrix :Matrix3D;
 		 
 		/**
 		 * 
@@ -27,6 +31,7 @@ package org.papervision3d.core.render.pipeline
 		{
 			_scheduledLookAt = new Vector.<DisplayObject3D>();
 			_lookAtMatrix = new Matrix3D();
+			_invWorldMatrix = new Matrix3D();
 		}
 		
 		/**
@@ -61,6 +66,7 @@ package org.papervision3d.core.render.pipeline
 			while (_scheduledLookAt.length)
 			{
 				var object :DisplayObject3D = _scheduledLookAt.pop();
+				var parent :DisplayObject3D = object.parent as DisplayObject3D;
 				var transform :Transform3D = object.transform;
 				var eye :Vector3D = transform.position;
 				var tgt :Vector3D = transform.scheduledLookAt.position;
@@ -72,6 +78,20 @@ package org.papervision3d.core.render.pipeline
 				// prepend it to the world matrix
 				object.transform.worldTransform.prepend(_lookAtMatrix);
 				
+				if (parent)
+				{
+					_invWorldMatrix.rawData = parent.transform.worldTransform.rawData;
+					_invWorldMatrix.invert();
+					object.transform.worldTransform.append(_invWorldMatrix);
+				}
+				
+				var components :Vector.<Vector3D> = object.transform.worldTransform.decompose();
+				var euler :Vector3D = components[1];
+				
+				object.transform.localEulerAngles.x = -euler.x * MathUtil.TO_DEGREES;
+				object.transform.localEulerAngles.y = euler.y * MathUtil.TO_DEGREES;
+				object.transform.localEulerAngles.z = euler.z * MathUtil.TO_DEGREES;
+				
 				// clear
 				object.transform.scheduledLookAt = null;
 			}
@@ -80,28 +100,26 @@ package org.papervision3d.core.render.pipeline
 		/**
 		 * 
 		 */ 
-		protected function transformToWorld(object:DisplayObject3D, parent:DisplayObject3D=null):void
+		protected function transformToWorld(object:DisplayObject3D, parent:DisplayObject3D=null, processLookAt:Boolean=false):void
 		{
 			var child :DisplayObject3D;
 			var wt :Matrix3D = object.transform.worldTransform;
 			
-			if (object.transform.scheduledLookAt)
+			if (!processLookAt && object.transform.scheduledLookAt)
 			{
 				_scheduledLookAt.push( object );
 			}
-
+			
 			wt.rawData = object.transform.localToWorldMatrix.rawData;
-		
 			if (parent)
 			{
 				wt.append(parent.transform.worldTransform);	
 			}
-	
 			object.transform.position = wt.transformVector(object.transform.localPosition);
-		
+			
 			for each (child in object._children)
 			{
-				transformToWorld(child, object);
+				transformToWorld(child, object, processLookAt);
 			}
 		}
 

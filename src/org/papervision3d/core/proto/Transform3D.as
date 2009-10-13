@@ -5,6 +5,7 @@ package org.papervision3d.core.proto
 	
 	import org.papervision3d.core.math.Quaternion;
 	import org.papervision3d.core.math.utils.MathUtil;
+	import org.papervision3d.core.math.utils.MatrixUtil;
 	import org.papervision3d.core.ns.pv3d;
 	
 	/**
@@ -111,7 +112,32 @@ package org.papervision3d.core.proto
 			// its up to some higher level class to deal with it.
 			scheduledLookAt = target;
 			scheduledLookAtUp = worldUp || DEFAULT_LOOKAT_UP;
+			
+			_localEulerAngles.x = 0;
+			_localEulerAngles.y = 0;
+			_localEulerAngles.z = 0;
+			
+			var eye :Vector3D = _position;
+			var center :Vector3D = target.position;
+			
+			//_lookAt = MatrixUtil.createLookAtMatrix(eye, center, DEFAULT_LOOKAT_UP);
+			/*
+			var q :Quaternion = Quaternion.createFromMatrix(_lookAt);
+			
+			var euler :Vector3D = q.toEuler();
+				
+			euler.x *= MathUtil.TO_DEGREES;
+			euler.y *= MathUtil.TO_DEGREES;
+			euler.z *= MathUtil.TO_DEGREES;
+			
+			_eulerAngles.x = -euler.y;
+			_eulerAngles.y = euler.x;
+			_eulerAngles.z = euler.z;
+			*/
+			//_dirty = true;
 		}
+		
+		private var _lookAt :Matrix3D;
 		
 		/**
 		 * Applies a rotation of eulerAngles.x degrees around the x axis, eulerAngles.y degrees around 
@@ -133,6 +159,17 @@ package org.papervision3d.core.proto
 					_localEulerAngles.z * MathUtil.TO_RADIANS,
 					_localEulerAngles.x * MathUtil.TO_RADIANS
 					);
+				/*
+				var euler :Vector3D = _localRotation.toEuler();
+				
+				euler.x *= MathUtil.TO_DEGREES;
+				euler.y *= MathUtil.TO_DEGREES;
+				euler.z *= MathUtil.TO_DEGREES;
+				
+				_localEulerAngles.x = -euler.y;
+				_localEulerAngles.y = euler.x;
+				_localEulerAngles.z = euler.z;
+				*/
 			}
 			else
 			{
@@ -197,15 +234,39 @@ package org.papervision3d.core.proto
 		{
 			if (_dirty)
 			{
-				rotate( _localEulerAngles, true );
+				if (false)
+				{
+					_transform.rawData = _lookAt.rawData;
+					//_transform.prependTranslation( -_localPosition.x, -_localPosition.y, -_localPosition.z);
+					_transform.append(_localRotation.matrix);
+					
+					
+					var euler :Vector3D = Quaternion.createFromMatrix(_transform).toEuler();
+					
+					euler.x *= MathUtil.TO_DEGREES;
+					euler.y *= MathUtil.TO_DEGREES;
+					euler.z *= MathUtil.TO_DEGREES;
+					
+					//_localEulerAngles.x = -euler.y;
+					//_localEulerAngles.y = euler.x;
+					//_localEulerAngles.z = euler.z;
+					
+					_transform.appendTranslation( _localPosition.x, _localPosition.y, _localPosition.z);
+					
+					_lookAt = null;
+				}
+				else
+				{
+					rotate( _localEulerAngles, true );
 				
-				_transform.rawData = _localRotation.matrix.rawData;
-				_transform.appendTranslation( _localPosition.x, _localPosition.y, _localPosition.z);
-	
+					_transform.rawData = _localRotation.matrix.rawData;
+					
+					_transform.appendTranslation( _localPosition.x, _localPosition.y, _localPosition.z);
+				}
 				rotate( _eulerAngles, false );
 				_transform.append( _rotation.matrix );
 				
-				_transform.prependScale(_localScale.x, _localScale.y, _localScale.z);
+			//	_transform.prependScale(_localScale.x, _localScale.y, _localScale.z);
 				_dirty = false;
 
 			}		

@@ -21,11 +21,13 @@ package org.papervision3d.core.math.utils
 			_f.z = target.z - eye.z;
 			_f.normalize();
 			
+			// f x up
 			_s.x = (up.y * _f.z) - (up.z * _f.y);
 			_s.y = (up.z * _f.x) - (up.x * _f.z);
 			_s.z = (up.x * _f.y) - (up.y * _f.x);
 			_s.normalize();
 			
+			// f x s
 			_u.x = (_s.y * _f.z) - (_s.z * _f.y);
 			_u.y = (_s.z * _f.x) - (_s.x * _f.z);
 			_u.z = (_s.x * _f.y) - (_s.y * _f.x);

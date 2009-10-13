@@ -14,6 +14,7 @@ package org.papervision3d.render
 	import org.papervision3d.core.render.clipping.IPolygonClipper;
 	import org.papervision3d.core.render.clipping.SutherlandHodgmanClipper;
 	import org.papervision3d.core.render.data.RenderData;
+	import org.papervision3d.core.render.data.RenderStats;
 	import org.papervision3d.core.render.draw.items.TriangleDrawable;
 	import org.papervision3d.core.render.draw.list.DrawableList;
 	import org.papervision3d.core.render.draw.list.IDrawableList;
@@ -21,7 +22,6 @@ package org.papervision3d.render
 	import org.papervision3d.core.render.pipeline.BasicPipeline;
 	import org.papervision3d.core.render.raster.DefaultRasterizer;
 	import org.papervision3d.core.render.raster.IRasterizer;
-	import org.papervision3d.materials.AbstractMaterial;
 	import org.papervision3d.objects.DisplayObject3D;
 	import org.papervision3d.view.Viewport3D;
 
@@ -34,6 +34,7 @@ package org.papervision3d.render
 		public var viewport :Viewport3D;
 		public var rasterizer : IRasterizer;
 		public var geometry :TriangleGeometry;
+		public var stats :RenderStats;
 		
 		private var _clipFlags :uint;
 		private var _clippedTriangles :int = 0;
@@ -52,6 +53,7 @@ package org.papervision3d.render
 			renderList = new DrawableList();
 			clipper = new SutherlandHodgmanClipper();
 			rasterizer = new DefaultRasterizer();
+			stats = new RenderStats();
 			
 			_clipFlags = ClipFlags.NEAR;
 		}
@@ -60,8 +62,10 @@ package org.papervision3d.render
 		{
 			var scene :DisplayObject3D = renderData.scene;
 			var camera :Camera3D = renderData.camera;
+			
 			renderList = renderData.drawlist;
-			this.viewport = renderData.viewport;
+			viewport = renderData.viewport;
+			renderData.stats = stats;
 			
 			camera.rotationX = camera.rotationX;
 			camera.update(renderData.viewport.sizeRectangle);

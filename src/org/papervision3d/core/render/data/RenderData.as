@@ -11,9 +11,11 @@ package org.papervision3d.core.render.data
 		public var camera :Camera3D;
 		public var viewport :Viewport3D;
 		public var drawlist : AbstractDrawableList;
+		public var stats :RenderStats;
 		
 		public function RenderData()
 		{
+		
 		}
 	}
 }

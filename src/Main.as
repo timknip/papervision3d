@@ -5,14 +5,13 @@ package {
 	import flash.display.StageScaleMode;
 	import flash.events.Event;
 	import flash.geom.Rectangle;
-	import flash.geom.Vector3D;
 	
 	import net.hires.debug.Stats;
 	
 	import org.papervision3d.cameras.Camera3D;
 	import org.papervision3d.core.geom.provider.VertexGeometry;
 	import org.papervision3d.core.ns.pv3d;
-	import org.papervision3d.core.render.clipping.SutherlandHodgmanClipper;
+	import org.papervision3d.core.render.clipping.ClipFlags;
 	import org.papervision3d.core.render.data.RenderData;
 	import org.papervision3d.core.render.draw.list.DrawableList;
 	import org.papervision3d.core.render.pipeline.BasicPipeline;
@@ -61,7 +60,7 @@ package {
 
 			addChild(new Stats());
 
-			camera = new Camera3D(50, 400, 2300, "Camera01");
+			camera = new Camera3D(30, 400, 2300, "Camera01");
 			pipeline = new BasicPipeline();
 			
 			cube = new Cube(new WireframeMaterial(), 100, "Cube");
@@ -95,15 +94,19 @@ package {
 			renderData.viewport = new Viewport3D(0, 0, true);
 			
 			renderer = new BasicRenderEngine();
+			renderer.clipFlags = ClipFlags.NONE;
 			
 			addChild(renderData.viewport);
 			
 			var plane :Plane = new Plane(new WireframeMaterial(0x0000FF), 400, 400, 1, 1, "Plane0");
 			scene.addChild(plane);
 		//	render();
-			
-			var clipper:SutherlandHodgmanClipper;
-			
+			camera.y = 500;
+			camera.lookAt(cube.getChildByName("red"));
+			render();
+			//camera.lookAt(cube.getChildByName("red"));
+			render();
+			render();
 			addEventListener(Event.ENTER_FRAME, render);
 		}
 		
@@ -114,17 +117,20 @@ package {
 		{
 			// rotation in global frame of reference : append
 		//	cube.x ++;
-		//	cube.rotationY--;
+			cube.rotationY--;
 			
 			//cube.getChildByName("blue").x += 0.1;
 			//cube.getChildByName("blue").rotationZ--;
-			//cube.getChildByName("blue").lookAt( cube.getChildByName("red") );
+		//	cube.getChildByName("blue").lookAt( cube.getChildByName("red") );
 			
 			cube.getChildByName("green").lookAt( cube.getChildByName("red") );
 			
-			cube.getChildByName("red").rotateAround(_s++, new Vector3D(0, 0, _s));
+			cube.getChildByName("red").transform.eulerAngles.z++;
+			cube.getChildByName("red").transform.eulerAngles.y--;
+			cube.getChildByName("red").transform.dirty = true;
+		//	cube.getChildByName("red").rotateAround(_s++, new Vector3D(0, _s, _s));
 		//	cube.getChildByName("red").scaleX = 2;
-			cube.getChildByName("red").rotationX += 3;
+		//	cube.getChildByName("red").rotateAround(_s, new Vector3D(0, -_s, 0));
 		//	cube.getChildByName("green").rotateAround(_r++, Vector3D.X_AXIS);
 			
 			camera.x = Math.sin(_r) * 950;
