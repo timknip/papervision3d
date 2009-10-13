@@ -4,7 +4,8 @@ package {
 	import flash.display.StageQuality;
 	import flash.display.StageScaleMode;
 	import flash.events.Event;
-	import flash.geom.Rectangle;
+	import flash.text.TextField;
+	import flash.text.TextFormat;
 	
 	import net.hires.debug.Stats;
 	
@@ -13,7 +14,7 @@ package {
 	import org.papervision3d.core.ns.pv3d;
 	import org.papervision3d.core.render.clipping.ClipFlags;
 	import org.papervision3d.core.render.data.RenderData;
-	import org.papervision3d.core.render.draw.list.DrawableList;
+	import org.papervision3d.core.render.data.RenderStats;
 	import org.papervision3d.core.render.pipeline.BasicPipeline;
 	import org.papervision3d.materials.WireframeMaterial;
 	import org.papervision3d.objects.DisplayObject3D;
@@ -33,11 +34,11 @@ package {
 		public var cube :Cube;
 		public var camera :Camera3D;
 		public var pipeline :BasicPipeline;
-		public var viewport :Rectangle;
+		public var viewport :Viewport3D;
 		public var scene :DisplayObject3D;
 		public var renderData :RenderData;
 		public var renderer :BasicRenderEngine;
-	
+		public var tf :TextField;
 		
 		public function Main()
 		{
@@ -60,7 +61,18 @@ package {
 
 			addChild(new Stats());
 
-			camera = new Camera3D(30, 400, 2300, "Camera01");
+			tf = new TextField();
+			addChild(tf);
+			tf.x = 1;
+			tf.y = 110;
+			tf.width = 300;
+			tf.height = 200;
+			tf.defaultTextFormat = new TextFormat("Arial", 10, 0xff0000);
+			tf.selectable = false;
+			tf.multiline = true;
+			tf.text = "Papervision3D - version 3.0";
+			
+			camera = new Camera3D(50, 400, 2300, "Camera01");
 			pipeline = new BasicPipeline();
 			
 			cube = new Cube(new WireframeMaterial(), 100, "Cube");
@@ -86,17 +98,12 @@ package {
 				
 			camera.z = 800;
 			
-			renderData = new RenderData();
-			renderData.camera = camera;
-			renderData.scene = scene;
-			renderData.drawlist = new DrawableList();
-			
-			renderData.viewport = new Viewport3D(0, 0, true);
+			viewport = new Viewport3D(0, 0, true);
 			
 			renderer = new BasicRenderEngine();
-			renderer.clipFlags = ClipFlags.NONE;
+			renderer.clipFlags = ClipFlags.ALL;
 			
-			addChild(renderData.viewport);
+			addChild(viewport);
 			
 			var plane :Plane = new Plane(new WireframeMaterial(0x0000FF), 400, 400, 1, 1, "Plane0");
 			scene.addChild(plane);
@@ -122,11 +129,13 @@ package {
 			//cube.getChildByName("blue").x += 0.1;
 			//cube.getChildByName("blue").rotationZ--;
 		//	cube.getChildByName("blue").lookAt( cube.getChildByName("red") );
+			cube.getChildByName("blue").rotationZ += 4;
 			
+			cube.getChildByName("blue").transform.eulerAngles.y--;
 			cube.getChildByName("green").lookAt( cube.getChildByName("red") );
 			
 			cube.getChildByName("red").transform.eulerAngles.z++;
-			cube.getChildByName("red").transform.eulerAngles.y--;
+		//	cube.getChildByName("red").transform.eulerAngles.y--;
 			cube.getChildByName("red").transform.dirty = true;
 		//	cube.getChildByName("red").rotateAround(_s++, new Vector3D(0, _s, _s));
 		//	cube.getChildByName("red").scaleX = 2;
@@ -142,15 +151,17 @@ package {
 			//camera.lookAt( cube.getChildByName("blue") );
 			//trace(cube.getChildByName("red").transform.position);
 			
-			renderer.renderScene(renderData);	
+			renderer.renderScene(scene, camera, viewport);	
 			
+			var stats :RenderStats = renderer.renderData.stats;
 			
-			
-			//renderScene(renderData.viewport.containerSprite.graphics, scene);
-			//trace((drawArray[1] as GraphicsTrianglePath).vertices);
+			tf.text = "Papervision3D - version 3.0\n" +
+				"\ntotal objects: " + stats.totalObjects +
+				"\nculled objects: " + stats.culledObjects +
+				"\n\ntotal triangles: " + stats.totalTriangles +
+				"\nculled triangles: " + stats.culledTriangles +
+				"\nclipped triangles: " + stats.clippedTriangles;
 			
 		}
-		
-	
 	}
 }

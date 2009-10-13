@@ -89,7 +89,7 @@ package org.papervision3d.cameras
 				frustum.extractPlanes(projectionMatrix, frustum.viewClippingPlanes);
 			}
 			
-			// TODO: sniff whether our transform was dirty, no need to calc when can didn't move.
+			// TODO: sniff whether our transform was dirty, no need to calc when camera didn't move.
 			if (_enableCulling)
 			{
 				_worldCullingMatrix.rawData = viewMatrix.rawData;

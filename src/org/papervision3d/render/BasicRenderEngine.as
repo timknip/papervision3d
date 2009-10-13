@@ -25,6 +25,9 @@ package org.papervision3d.render
 	import org.papervision3d.objects.DisplayObject3D;
 	import org.papervision3d.view.Viewport3D;
 
+	/**
+	 * 
+	 */ 
 	public class BasicRenderEngine extends AbstractRenderEngine
 	{
 		use namespace pv3d;
@@ -34,46 +37,68 @@ package org.papervision3d.render
 		public var viewport :Viewport3D;
 		public var rasterizer : IRasterizer;
 		public var geometry :TriangleGeometry;
+		public var renderData :RenderData;
 		public var stats :RenderStats;
 		
 		private var _clipFlags :uint;
-		private var _clippedTriangles :int = 0;
-		private var _culledTriangles :int = 0;
-		private var _totalTriangles :int = 0;
 		
+		private var _v0 :Vector3D;
+		private var _v1 :Vector3D;
+		private var _v2 :Vector3D;
+		private var _sv0 :Vector3D;
+		private var _sv1 :Vector3D;
+		private var _sv2 :Vector3D;
+		
+		/**
+		 * 
+		 */ 	
 		public function BasicRenderEngine()
 		{
 			super();
 			init();
 		}
 		
+		/**
+		 * 
+		 */ 
 		protected function init():void
 		{
 			pipeline = new BasicPipeline();
 			renderList = new DrawableList();
 			clipper = new SutherlandHodgmanClipper();
 			rasterizer = new DefaultRasterizer();
+			renderData = new RenderData();
 			stats = new RenderStats();
 			
 			_clipFlags = ClipFlags.NEAR;
+			
+			_v0 = new Vector3D();
+			_v1 = new Vector3D();
+			_v2 = new Vector3D();
+			_sv0 = new Vector3D();
+			_sv1 = new Vector3D();
+			_sv2 = new Vector3D();
 		}
 		
-		override public function renderScene(renderData:RenderData):void
-		{
-			var scene :DisplayObject3D = renderData.scene;
-			var camera :Camera3D = renderData.camera;
-			
-			renderList = renderData.drawlist;
-			viewport = renderData.viewport;
+		/**
+		 * 
+		 */ 
+		override public function renderScene(scene:DisplayObject3D, camera:Camera3D, viewport:Viewport3D):void
+		{	
+			renderData.scene = scene;
+			renderData.camera = camera;
+			renderData.viewport = viewport;
 			renderData.stats = stats;
 			
-			camera.rotationX = camera.rotationX;
 			camera.update(renderData.viewport.sizeRectangle);
 						
 			pipeline.execute(renderData);
  
  			renderList.clear();
+ 			stats.clear();
+ 			
 			fillRenderList(camera, scene);
+			
 			rasterizer.rasterize(renderList, renderData.viewport);
 		}
 		
@@ -91,6 +116,11 @@ package org.papervision3d.render
 			var v0 :Vector3D = new Vector3D();
 			var v1 :Vector3D = new Vector3D();
 			var v2 :Vector3D = new Vector3D();
+			var _sv0 :Vector3D = new Vector3D();
+			var _sv1 :Vector3D = new Vector3D();
+			var _sv2 :Vector3D = new Vector3D();
+			
+			stats.totalObjects++;
 			
 			if (object.cullingState == 0 && object.geometry is TriangleGeometry)
 			{
@@ -105,7 +135,7 @@ package org.papervision3d.render
 					triangle.clipFlags = 0;
 					triangle.visible = false;
 					
-					_totalTriangles++;
+					stats.totalTriangles++;
 					
 					// get vertices in view / camera space
 					v0.x = geometry.viewVertexData[ triangle.v0.vectorIndexX ];	
@@ -119,74 +149,82 @@ package org.papervision3d.render
 					v2.z = geometry.viewVertexData[ triangle.v2.vectorIndexZ ];
 					
 					// setup clipflags
+					// first test the near plane as verts behind near project to infinity.
 					if (_clipFlags & ClipFlags.NEAR)
 					{
 						flags = getClipFlags(clipPlanes[Frustum3D.NEAR], v0, v1, v2);
-						if (flags == 7 ) { _culledTriangles++; continue; }
+						if (flags == 7 ) { stats.culledTriangles++; continue; }
 						else if (flags) { triangle.clipFlags |= ClipFlags.NEAR; }
 					}
 					
+					// passed the near test loosely, verts may have projected to infinity
+					// we do it here, cause - paranoia - even these array accesses may cost us
+					_sv0.x = geometry.screenVertexData[ triangle.v0.screenIndexX ];	
+					_sv0.y = geometry.screenVertexData[ triangle.v0.screenIndexY ];
+					_sv1.x = geometry.screenVertexData[ triangle.v1.screenIndexX ];	
+					_sv1.y = geometry.screenVertexData[ triangle.v1.screenIndexY ];
+					_sv2.x = geometry.screenVertexData[ triangle.v2.screenIndexX ];	
+					_sv2.y = geometry.screenVertexData[ triangle.v2.screenIndexY ];
+					
+					// when *not* straddling the near plane we can safely test for backfaces
+					// ie: lets not clip backfacing triangles!
+					if (triangle.clipFlags != ClipFlags.NEAR)
+					{
+						// Simple backface culling.
+						if ((_sv2.x - _sv0.x) * (_sv1.y - _sv0.y) - (_sv2.y - _sv0.y) * (_sv1.x - _sv0.x) > 0)
+						{
+							stats.culledTriangles ++;
+							continue;
+						}
+					}
+					
+					// okay, continue setting up clipflags
 					if (_clipFlags & ClipFlags.FAR)
 					{
 						flags = getClipFlags(clipPlanes[Frustum3D.FAR], v0, v1, v2);
-						if (flags == 7 ) { _culledTriangles++; continue; }
+						if (flags == 7 ) { stats.culledTriangles++; continue; }
 						else if (flags) { triangle.clipFlags |= ClipFlags.FAR; }
 					}
 					
 					if (_clipFlags & ClipFlags.LEFT)
 					{
 						flags = getClipFlags(clipPlanes[Frustum3D.LEFT], v0, v1, v2);
-						if (flags == 7 ) { _culledTriangles++; continue; }
+						if (flags == 7 ) { stats.culledTriangles++; continue; }
 						else if (flags) { triangle.clipFlags |= ClipFlags.LEFT; }
 					}
 					
 					if (_clipFlags & ClipFlags.RIGHT)
 					{
 						flags = getClipFlags(clipPlanes[Frustum3D.RIGHT], v0, v1, v2);
-						if (flags == 7 ) { _culledTriangles++; continue; }
+						if (flags == 7 ) { stats.culledTriangles++; continue; }
 						else if (flags) { triangle.clipFlags |= ClipFlags.RIGHT; }
 					}
 					
 					if (_clipFlags & ClipFlags.TOP)
 					{
 						flags = getClipFlags(clipPlanes[Frustum3D.TOP], v0, v1, v2);
-						if (flags == 7 ) { _culledTriangles++; continue; }
+						if (flags == 7 ) { stats.culledTriangles++; continue; }
 						else if (flags) { triangle.clipFlags |= ClipFlags.TOP; }
 					}
 					
 					if (_clipFlags & ClipFlags.BOTTOM)
 					{
 						flags = getClipFlags(clipPlanes[Frustum3D.BOTTOM], v0, v1, v2);
-						if (flags == 7 ) { _culledTriangles++; continue; }
+						if (flags == 7 ) { stats.culledTriangles++; continue; }
 						else if (flags) { triangle.clipFlags |= ClipFlags.BOTTOM };
 					}
-					
+						
 					if (triangle.clipFlags == 0)
 					{
 						// triangle completely in view
-						// select screen vertex data
-						v0.x = geometry.screenVertexData[ triangle.v0.screenIndexX ];	
-						v0.y = geometry.screenVertexData[ triangle.v0.screenIndexY ];
-						v1.x = geometry.screenVertexData[ triangle.v1.screenIndexX ];	
-						v1.y = geometry.screenVertexData[ triangle.v1.screenIndexY ];
-						v2.x = geometry.screenVertexData[ triangle.v2.screenIndexX ];	
-						v2.y = geometry.screenVertexData[ triangle.v2.screenIndexY ];
-						
-						// Simple backface culling.
-						if ((v2.x - v0.x) * (v1.y - v0.y) - (v2.y - v0.y) * (v1.x - v0.x) > 0)
-						{
-							_culledTriangles ++;
-							continue;
-						}
-						
 						var drawable :TriangleDrawable = triangle.drawable as TriangleDrawable || new TriangleDrawable();
 						drawable.screenZ = (v0.z + v1.z + v2.z) / 3;
-						drawable.x0 = v0.x;
-						drawable.y0 = v0.y;
-						drawable.x1 = v1.x;
-						drawable.y1 = v1.y;
-						drawable.x2 = v2.x;
-						drawable.y2 = v2.y;
+						drawable.x0 = _sv0.x;
+						drawable.y0 = _sv0.y;
+						drawable.x1 = _sv1.x;
+						drawable.y1 = _sv1.y;
+						drawable.x2 = _sv2.x;
+						drawable.y2 = _sv2.y;
 						drawable.material = triangle.material;
 						
 						renderList.addDrawable(drawable);
@@ -223,7 +261,7 @@ package org.papervision3d.render
 			var outV :Vector.<Number> = new Vector.<Number>();
 			var outUVT :Vector.<Number> = new Vector.<Number>();
 			
-			_clippedTriangles++;
+			stats.clippedTriangles++;
 			
 			if (triangle.clipFlags & ClipFlags.NEAR)
 			{
@@ -287,7 +325,7 @@ package org.papervision3d.render
 			var numTriangles : int = 1 + ((inV.length / 3)-3);
 			var i:int, i2 :int, i3 :int;
 
-			_totalTriangles += numTriangles - 1;
+			stats.totalTriangles += numTriangles - 1;
 			
 			for(i = 0; i < numTriangles; i++)
 			{
@@ -303,7 +341,7 @@ package org.papervision3d.render
 				
 				if ((v2.x - v0.x) * (v1.y - v0.y) - (v2.y - v0.y) * (v1.x - v0.x) > 0)
 				{
-					_culledTriangles ++;
+					stats.culledTriangles ++;
 					continue;
 				}
 				
@@ -357,29 +395,5 @@ package org.papervision3d.render
 				throw new IllegalOperationError("clipFlags should be a value between 0 and " + ClipFlags.ALL + "\nsee org.papervision3d.core.render.clipping.ClipFlags");
 			}
 		}
-		
-		/**
-		 * 
-		 */
-		public function get clippedTriangles():int
-		{
-			return _clippedTriangles;
-		} 
-		
-		/**
-		 * 
-		 */
-		public function get culledTriangles():int
-		{
-			return _culledTriangles;
-		} 
-		
-		/**
-		 * 
-		 */
-		public function get totalTriangles():int
-		{
-			return _totalTriangles;
-		} 
 	}
 }
