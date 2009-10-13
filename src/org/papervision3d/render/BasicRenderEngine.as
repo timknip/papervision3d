@@ -219,13 +219,26 @@ package org.papervision3d.render
 					{
 						// Triangle completely inside the (view) frustum
 						var drawable :TriangleDrawable = triangle.drawable as TriangleDrawable || new TriangleDrawable();
+						
 						drawable.screenZ = (v0.z + v1.z + v2.z) / 3;
+						
 						drawable.x0 = sv0.x;
 						drawable.y0 = sv0.y;
 						drawable.x1 = sv1.x;
 						drawable.y1 = sv1.y;
 						drawable.x2 = sv2.x;
 						drawable.y2 = sv2.y;
+						
+						drawable.uvtData = drawable.uvtData || new Vector.<Number>(9, true);
+						drawable.uvtData[0] = renderer.geometry.uvtData[ triangle.v0.vectorIndexX ];
+						drawable.uvtData[1] = renderer.geometry.uvtData[ triangle.v0.vectorIndexY ];
+						drawable.uvtData[2] = renderer.geometry.uvtData[ triangle.v0.vectorIndexZ ];
+						drawable.uvtData[3] = renderer.geometry.uvtData[ triangle.v1.vectorIndexX ];
+						drawable.uvtData[4] = renderer.geometry.uvtData[ triangle.v1.vectorIndexY ];
+						drawable.uvtData[5] = renderer.geometry.uvtData[ triangle.v1.vectorIndexZ ];
+						drawable.uvtData[6] = renderer.geometry.uvtData[ triangle.v2.vectorIndexX ];
+						drawable.uvtData[7] = renderer.geometry.uvtData[ triangle.v2.vectorIndexY ];
+						drawable.uvtData[8] = renderer.geometry.uvtData[ triangle.v2.vectorIndexZ ];
 						drawable.material = triangle.material;
 						
 						renderList.addDrawable(drawable);
@@ -283,7 +296,7 @@ package org.papervision3d.render
 		{		
 			var plane :Plane3D = camera.frustum.viewClippingPlanes[ Frustum3D.NEAR ];
 			var inV :Vector.<Number> = Vector.<Number>([v0.x, v0.y, v0.z, v1.x, v1.y, v1.z, v2.x, v2.y, v2.z]);
-			var inUVT :Vector.<Number> = Vector.<Number>([0, 0, 0, 0, 0, 0, 0, 0, 0]);
+			var inUVT :Vector.<Number> = Vector.<Number>([triangle.uv0.u, triangle.uv0.v, 0, triangle.uv1.u, triangle.uv1.v, 0, triangle.uv2.u, triangle.uv2.v, 0]);
 			var outV :Vector.<Number> = new Vector.<Number>();
 			var outUVT :Vector.<Number> = new Vector.<Number>();
 			
@@ -375,12 +388,23 @@ package org.papervision3d.render
 							
 				drawable.x0 = v0.x;
 				drawable.y0 = v0.y;
-				
 				drawable.x1 = v1.x;
 				drawable.y1 = v1.y;
-				
 				drawable.x2 = v2.x;
-				drawable.y2 = v2.y;	
+				drawable.y2 = v2.y;
+				
+				drawable.uvtData = drawable.uvtData || new Vector.<Number>(9, true);
+
+				drawable.uvtData[0] = inUVT[0];
+				drawable.uvtData[1] = inUVT[1];
+				drawable.uvtData[2] = inUVT[2];
+				drawable.uvtData[3] = inUVT[i3+3];
+				drawable.uvtData[4] = inUVT[i3+4];
+				drawable.uvtData[5] = inUVT[i3+5];
+				drawable.uvtData[6] = inUVT[i3+6];
+				drawable.uvtData[7] = inUVT[i3+7];
+				drawable.uvtData[8] = inUVT[i3+8];
+					
 				drawable.screenZ = (inV[2]+inV[i3+5]+inV[i3+8])/3;
 				drawable.material = triangle.material;
 				

@@ -108,8 +108,8 @@ package
 			camera2 = new Camera3D(50, 50, 500);
 			cube.addChild(camera2);
 				
-			var plane :Plane = new Plane(new WireframeMaterial(0x0000FF), 400, 400, 1, 1, "Plane0");
-			scene.addChild(plane);
+			//var plane :Plane = new Plane(new WireframeMaterial(0x0000FF), 400, 400, 1, 1, "Plane0");
+			//scene.addChild(plane);
 
 			addEventListener(Event.ENTER_FRAME, render);
 		}
@@ -119,7 +119,7 @@ package
 		
 		private function render(event:Event=null):void
 		{
-			camera2.frustumGeometry.update(camera2);
+			//camera2.frustumGeometry.update(camera2);
 			
 			// rotation in global frame of reference : append
 		//	cube.x ++;

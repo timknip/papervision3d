@@ -6,16 +6,11 @@ package org.papervision3d.core.geom.provider
 	
 	public class VertexGeometry extends Geometry
 	{
-	
-		
-			public var vertices :Vector.<Vertex>;
-		
+		public var vertices :Vector.<Vertex>;
 		public var uvtData :Vector.<Number>;
 		public var vertexData :Vector.<Number>;
-		
-		
 		public var screenVertexLength : int = 0;
-		 public var viewVertexLength : int = 0;
+		public var viewVertexLength : int = 0;
 		
 		/**
 		 * Constructor
