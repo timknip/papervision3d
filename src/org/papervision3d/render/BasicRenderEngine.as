@@ -45,6 +45,7 @@ package org.papervision3d.render
 		public var geometry :TriangleGeometry;
 		public var renderData :RenderData;
 		public var stats :RenderStats;
+		public var renderer : ObjectRenderer;
 		
 		private var _clipFlags :uint;
 		
@@ -109,7 +110,6 @@ package org.papervision3d.render
 		 */ 
 		private function fillRenderList(camera:Camera3D, object:DisplayObject3D):void 
 		{
-			var renderer : ObjectRenderer = object.renderer;
 			var child :DisplayObject3D;
 			var clipPlanes :Vector.<Plane3D> = camera.frustum.viewClippingPlanes;
 			var v0 :Vector3D = new Vector3D();
@@ -118,7 +118,8 @@ package org.papervision3d.render
 			var sv0 :Vector3D = new Vector3D();
 			var sv1 :Vector3D = new Vector3D();
 			var sv2 :Vector3D = new Vector3D();
-			
+		
+			renderer = object.renderer;	
 			stats.totalObjects++;
 			
 			if (object.cullingState == 0 && object.renderer.geometry is TriangleGeometry)
@@ -230,17 +231,17 @@ package org.papervision3d.render
 						drawable.y2 = sv2.y;
 						
 						drawable.uvtData = drawable.uvtData || new Vector.<Number>(9, true);
-						drawable.uvtData[0] = renderer.geometry.uvtData[ triangle.v0.vectorIndexX ];
-						drawable.uvtData[1] = renderer.geometry.uvtData[ triangle.v0.vectorIndexY ];
+						drawable.uvtData[0] = triangle.uv0.u;
+						drawable.uvtData[1] = triangle.uv0.v;
 						drawable.uvtData[2] = renderer.geometry.uvtData[ triangle.v0.vectorIndexZ ];
-						drawable.uvtData[3] = renderer.geometry.uvtData[ triangle.v1.vectorIndexX ];
-						drawable.uvtData[4] = renderer.geometry.uvtData[ triangle.v1.vectorIndexY ];
+						drawable.uvtData[3] = triangle.uv1.u;
+						drawable.uvtData[4] = triangle.uv1.v;
 						drawable.uvtData[5] = renderer.geometry.uvtData[ triangle.v1.vectorIndexZ ];
-						drawable.uvtData[6] = renderer.geometry.uvtData[ triangle.v2.vectorIndexX ];
-						drawable.uvtData[7] = renderer.geometry.uvtData[ triangle.v2.vectorIndexY ];
+						drawable.uvtData[6] = triangle.uv2.u;
+						drawable.uvtData[7] = triangle.uv2.v;
 						drawable.uvtData[8] = renderer.geometry.uvtData[ triangle.v2.vectorIndexZ ];
 						drawable.material = triangle.material;
-						
+						//trace(renderer.geometry.uvtData);
 						renderList.addDrawable(drawable);
 						
 						triangle.drawable = drawable;
@@ -296,9 +297,14 @@ package org.papervision3d.render
 		{		
 			var plane :Plane3D = camera.frustum.viewClippingPlanes[ Frustum3D.NEAR ];
 			var inV :Vector.<Number> = Vector.<Number>([v0.x, v0.y, v0.z, v1.x, v1.y, v1.z, v2.x, v2.y, v2.z]);
-			var inUVT :Vector.<Number> = Vector.<Number>([triangle.uv0.u, triangle.uv0.v, 0, triangle.uv1.u, triangle.uv1.v, 0, triangle.uv2.u, triangle.uv2.v, 0]);
 			var outV :Vector.<Number> = new Vector.<Number>();
 			var outUVT :Vector.<Number> = new Vector.<Number>();
+			var uvtData :Vector.<Number> = renderer.geometry.uvtData;
+			var inUVT :Vector.<Number> = Vector.<Number>([
+				triangle.uv0.u, triangle.uv0.v, 0,
+				triangle.uv1.u, triangle.uv1.v, 0,
+				triangle.uv2.u, triangle.uv2.v, 0
+			]);
 			
 			stats.clippedTriangles++;
 			

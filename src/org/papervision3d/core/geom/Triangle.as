@@ -56,9 +56,9 @@ package org.papervision3d.core.geom
 			this.v0 = v0;
 			this.v1 = v1;
 			this.v2 = v2;
-			this.uv0 = new UVCoord(uv0.u, uv0.v) || new UVCoord();
-			this.uv1 = new UVCoord(uv1.u, uv1.v)  || new UVCoord();
-			this.uv2 = new UVCoord(uv2.u, uv2.v)  || new UVCoord();
+			this.uv0 = uv0 || new UVCoord();
+			this.uv1 = uv1 || new UVCoord();
+			this.uv2 = uv2 || new UVCoord();
 			this.visible = true;
 		}
 	}

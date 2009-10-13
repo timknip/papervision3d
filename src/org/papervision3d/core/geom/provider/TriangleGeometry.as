@@ -34,20 +34,8 @@ package org.papervision3d.core.geom.provider
 				triangle.v1 = addVertex(triangle.v1);
 				triangle.v2 = addVertex(triangle.v2);
 				
-				uvtData[ triangle.v0.vectorIndexX ] = triangle.uv0.u;
-				uvtData[ triangle.v0.vectorIndexY ] = triangle.uv0.v;
-				uvtData[ triangle.v0.vectorIndexZ ] = 0;
-				
-				uvtData[ triangle.v1.vectorIndexX ] = triangle.uv1.u;
-				uvtData[ triangle.v1.vectorIndexY ] = triangle.uv1.v;
-				uvtData[ triangle.v1.vectorIndexZ ] = 0;
-				
-				uvtData[ triangle.v2.vectorIndexX ] = triangle.uv2.u;
-				uvtData[ triangle.v2.vectorIndexY ] = triangle.uv2.v;
-				uvtData[ triangle.v2.vectorIndexZ ] = 0;
-				
 				triangles.push(triangle);
-				
+
 				return triangle;	
 			}
 			else

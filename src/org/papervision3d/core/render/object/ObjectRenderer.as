@@ -1,7 +1,5 @@
 package org.papervision3d.core.render.object
 {
-	import __AS3__.vec.Vector;
-	
 	import org.papervision3d.core.geom.provider.VertexGeometry;
 	
 	public class ObjectRenderer
@@ -14,7 +12,6 @@ package org.papervision3d.core.render.object
 		{
 			viewVertexData = new Vector.<Number>();
 			screenVertexData = new Vector.<Number>();
-			
 		}
 		
 		public function updateIndices():void{

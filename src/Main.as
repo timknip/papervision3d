@@ -77,7 +77,8 @@ package
 			
 			camera = new Camera3D(30, 400, 2300, "Camera01");
 			scene.addChild( camera );
-			camera.enableCulling = false;
+			camera.enableCulling = false
+			camera.showFrustum = false;
 			camera.z = 800;
 
 			renderer = new BasicRenderEngine();
@@ -87,6 +88,7 @@ package
 			bmp.perlinNoise(256, 256, 2, 300, true, false);
 			
 			cube = new Cube(new BitmapMaterial(bmp), 100, "Cube");
+			//cube = new Cube(new WireframeMaterial(0xFF0000), 100, "Cube");
 			
 			var cubeChild0 :Cube = new Cube(new WireframeMaterial(0xFF0000), 100, "red");
 			cube.addChild( cubeChild0 );
@@ -111,7 +113,8 @@ package
 			
 			camera2 = new Camera3D(50, 50, 500);
 			cube.addChild(camera2);
-				
+			camera2.showFrustum = true;
+			cube.scaleX = 2;
 			//var plane :Plane = new Plane(new WireframeMaterial(0x0000FF), 400, 400, 1, 1, "Plane0");
 			//scene.addChild(plane);
 
@@ -123,7 +126,7 @@ package
 		
 		private function render(event:Event=null):void
 		{
-			//camera2.frustumGeometry.update(camera2);
+			camera2.frustumGeometry.update(camera2);
 			
 			// rotation in global frame of reference : append
 		//	cube.x ++;

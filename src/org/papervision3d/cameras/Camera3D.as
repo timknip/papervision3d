@@ -31,7 +31,7 @@ package org.papervision3d.cameras
 		private var _enableCulling :Boolean;
 		private var _worldCullingMatrix :Matrix3D;
 		private var _frustumGeometry :Frustum;
-		private var _showFrustumGeometry :Boolean;
+		private var _showFrustum :Boolean;
 		
 		/**
 		 * Constructor.
@@ -54,7 +54,7 @@ package org.papervision3d.cameras
 			_enableCulling = false;
 			_worldCullingMatrix = new Matrix3D();
 			_frustumGeometry = new Frustum(new WireframeMaterial(0x0000ff), "frustum-geometry");
-			_showFrustumGeometry = false;
+			_showFrustum = false;
 
 			frustum = new Frustum3D(this);
 			viewMatrix = new Matrix3D();
@@ -94,7 +94,7 @@ package org.papervision3d.cameras
 				// extract the view clipping planes
 				frustum.extractPlanes(projectionMatrix, Frustum3D.VIEW_PLANES);
 				
-				if (_showFrustumGeometry)
+				if (_showFrustum)
 				{
 					_frustumGeometry.update(this);
 				}
@@ -124,6 +124,19 @@ package org.papervision3d.cameras
 		{
 			return _aspectRatio;
 		}  
+		
+		/**
+		 * 
+		 */
+		public function get dirty():Boolean
+		{
+			return _dirty;
+		} 
+		
+		public function set dirty(value:Boolean):void
+		{
+			_dirty = value;	
+		}
 		
 		/**
 		 * 
@@ -228,12 +241,12 @@ package org.papervision3d.cameras
 			return _frustumGeometry;
 		}
 		
-		public function get showFrustumGeometry():Boolean
+		public function get showFrustum():Boolean
 		{
-			return _showFrustumGeometry;
+			return _showFrustum;
 		}
 		
-		public function set showFrustumGeometry(value:Boolean):void
+		public function set showFrustum(value:Boolean):void
 		{
 			if (value)
 			{
@@ -247,7 +260,7 @@ package org.papervision3d.cameras
 				removeChild(_frustumGeometry);
 			}
 			
-			_showFrustumGeometry = value;
+			_showFrustum = value;
 		}
 	}
 }
