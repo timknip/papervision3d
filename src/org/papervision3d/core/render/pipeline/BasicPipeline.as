@@ -1,7 +1,5 @@
 package org.papervision3d.core.render.pipeline
 {
-	import __AS3__.vec.Vector;
-	
 	import flash.geom.Matrix3D;
 	import flash.geom.Rectangle;
 	import flash.geom.Utils3D;
@@ -16,6 +14,9 @@ package org.papervision3d.core.render.pipeline
 	import org.papervision3d.core.render.data.RenderData;
 	import org.papervision3d.objects.DisplayObject3D;
 	
+	/**
+	 * @author Tim Knip / floorplanner.com
+	 */ 
 	public class BasicPipeline implements IRenderPipeline
 	{
 		use namespace pv3d;

@@ -9,7 +9,7 @@ package org.papervision3d.cameras
 	import org.papervision3d.objects.DisplayObject3D;
 
 	/**
-	 * 
+	 * @author Tim Knip / floorplanner.com
 	 */ 
 	public class Camera3D extends DisplayObject3D
 	{
@@ -86,7 +86,7 @@ package org.papervision3d.cameras
 				}
 				
 				// extract the view clipping planes
-				frustum.extractPlanes(projectionMatrix, frustum.viewClippingPlanes);
+				frustum.extractPlanes(projectionMatrix, Frustum3D.VIEW_PLANES);
 			}
 			
 			// TODO: sniff whether our transform was dirty, no need to calc when camera didn't move.
@@ -102,7 +102,7 @@ package org.papervision3d.cameras
 				_worldCullingMatrix.prependScale(0.5, 0.5, 0.5);
 				
 				// extract the world clipping planes
-				frustum.extractPlanes(_worldCullingMatrix, frustum.worldClippingPlanes, false);
+				frustum.extractPlanes(_worldCullingMatrix, Frustum3D.WORLD_PLANES, false);
 			}
 		}
 		

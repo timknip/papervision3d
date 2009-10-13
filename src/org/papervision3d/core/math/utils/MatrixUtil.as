@@ -10,7 +10,7 @@ package org.papervision3d.core.math.utils
 		private static var _u :Vector3D = new Vector3D();
 		
 		/**
-		 * 
+		 * @author Tim Knip / floorplanner.com
 		 */ 
 		public static function createLookAtMatrix(eye:Vector3D, target:Vector3D, up:Vector3D, resultMatrix:Matrix3D=null):Matrix3D
 		{

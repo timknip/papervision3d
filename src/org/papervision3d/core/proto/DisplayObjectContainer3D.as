@@ -5,6 +5,9 @@ package org.papervision3d.core.proto
 	import org.papervision3d.core.ns.pv3d;
 	import org.papervision3d.objects.DisplayObject3D;
 	
+	/**
+	 * @author Tim Knip / floorplanner.com
+	 */ 
 	public class DisplayObjectContainer3D
 	{
 		use namespace pv3d;

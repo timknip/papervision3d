@@ -2,6 +2,9 @@ package org.papervision3d.core.memory.pool
 {
 	import org.papervision3d.core.render.draw.items.AbstractDrawable;
 	
+	/**
+	 * @author Tim Knip / floorplanner.com
+	 */ 
 	public class DrawablePool
 	{
 		public var growSize :uint;

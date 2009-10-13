@@ -1,10 +1,16 @@
 package org.papervision3d.core.math
 {
 	import flash.geom.Matrix3D;
-	import flash.geom.Vector3D;
 	
 	import org.papervision3d.cameras.Camera3D;
+	import org.papervision3d.core.geom.Vertex;
+	import org.papervision3d.core.math.utils.MathUtil;
 	
+	/**
+	 * Frustum3D.
+	 * 
+	 * @author Tim Knip / floorplanner.com
+	 */ 
 	public class Frustum3D
 	{
 		public static const WORLD_PLANES :uint = 0;
@@ -26,9 +32,9 @@ package org.papervision3d.core.math
 		public var worldBoundingSphere :BoundingSphere3D;
 		
 		/**
-		 * 
+		 * Constructor.
 		 */ 
-		public function Frustum3D(camera:Camera3D)
+		public function Frustum3D(camera:Camera3D=null)
 		{
 			this.camera = camera;
 			this.worldBoundingSphere = new BoundingSphere3D();
@@ -62,19 +68,68 @@ package org.papervision3d.core.math
 		}
 		
 		/**
+		 * 
+		 */ 
+		public function calcFrustumVertices(camera:Camera3D):void
+		{
+			var vertices :Vector.<Vertex> = new Vector.<Vertex>(10, true);
+			var fov :Number = camera.fov;
+			var near :Number = camera.near;
+			var far :Number = camera.far;
+			var ratio :Number = camera.aspectRatio;
+			
+			// compute width and height of the near and far section
+			var angle : Number = MathUtil.TO_RADIANS * fov * 0.5;
+			var tang :Number = Math.tan(angle);
+			var nh :Number = near * tang;
+			var nw :Number = nh * ratio;
+			var fh :Number = far * tang;
+			var fw :Number = fh * ratio;
+			
+			var nc :Vertex = new Vertex(0, 0, -near);
+			var fc :Vertex = new Vertex(0, 0, -far);
+			
+			var ntl :Vertex = new Vertex(-nw * 0.5,  nh * 0.5, -near);
+			var nbl :Vertex = new Vertex(-nw * 0.5, -nh * 0.5, -near);
+			var nbr :Vertex = new Vertex( nw * 0.5, -nh * 0.5, -near);
+			var ntr :Vertex = new Vertex( nw * 0.5,  nh * 0.5, -near);
+			
+			var ftl :Vertex = new Vertex(-fw * 0.5,  fh * 0.5, -far);
+			var fbl :Vertex = new Vertex(-fw * 0.5, -fh * 0.5, -far);
+			var fbr :Vertex = new Vertex( fw * 0.5, -fh * 0.5, -far);
+			var ftr :Vertex = new Vertex( fw * 0.5,  fh * 0.5, -far);
+		}
+		
+		/**
 		 * Extract frustum planes.
 		 * 
 		 * @param matrix		The matrix to extract the planes from (P for eye-space, M*P for world-space).
-		 * @param planes		The planes to extract to.
+		 * @param which			Which planes to extract. Valid values are VIEW_PLANES, WORLD_PLANES or SCREEN_PLANES.
 		 * @param normalize		Whether to normalize the planes. Default is true.
-		 * @param flipNormals	Whether to flip the plane normals. Default is true.
-		 * 						NDC is lefthanded (looking down +Z), eye-space is righthanded (looking down -Z).
-		 * 						Setting @flipNormals to true makes the frustum looking down +Z.
+		 * @param flipNormals	Whether to flip the plane normals.
+		 * 
+		 * @see	#VIEW_PLANES
+		 * @see	#WORLD_PLANES
+		 * @see #SCREEN_PLANES
 		 */
-		public function extractPlanes(matrix:Matrix3D, planes:Vector.<Plane3D>, normalize:Boolean=true, 
-									  flipNormals:Boolean=false) : void {
+		public function extractPlanes(matrix:Matrix3D, which:int, normalize:Boolean=true, flipNormals:Boolean=false) : void 
+		{	
 			var m :Vector.<Number> = matrix.rawData;
+			var planes :Vector.<Plane3D>;
 			var i :int;
+			
+			switch( which )
+			{
+				case SCREEN_PLANES:
+					return;
+				case WORLD_PLANES:
+					planes = this.worldClippingPlanes;
+					break;
+				case VIEW_PLANES:
+				default:
+					planes = this.viewClippingPlanes;
+					break;
+			}
 			
 			planes[TOP].setCoefficients(
 				-m[1] + m[3],

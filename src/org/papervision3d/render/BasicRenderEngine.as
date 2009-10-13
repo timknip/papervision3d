@@ -27,7 +27,7 @@ package org.papervision3d.render
 	import org.papervision3d.view.Viewport3D;
 
 	/**
-	 * 
+	 * @author Tim Knip / floorplanner.com
 	 */ 
 	public class BasicRenderEngine extends AbstractRenderEngine
 	{

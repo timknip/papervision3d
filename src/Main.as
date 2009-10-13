@@ -1,4 +1,5 @@
-package {
+package 
+{
 	import flash.display.Sprite;
 	import flash.display.StageAlign;
 	import flash.display.StageQuality;
@@ -52,13 +53,7 @@ package {
 			stage.frameRate = 60;
 			stage.quality = StageQuality.LOW;
 			
-			var aspect :Number = stage.stageWidth / stage.stageHeight;
-		
-			container = new Sprite();
-			addChild(container);
-			container.x = stage.stageWidth / 2;
-			container.y = stage.stageHeight / 2;
-
+			// Thanks doob!
 			addChild(new Stats());
 
 			tf = new TextField();
@@ -72,8 +67,18 @@ package {
 			tf.multiline = true;
 			tf.text = "Papervision3D - version 3.0";
 			
+			viewport = new Viewport3D(0, 0, true);
+			addChild(viewport);
+			
+			scene = new DisplayObject3D("Scene");
+			
 			camera = new Camera3D(30, 400, 2300, "Camera01");
-			pipeline = new BasicPipeline();
+			scene.addChild( camera );
+			camera.enableCulling = false;
+			camera.z = 800;
+
+			renderer = new BasicRenderEngine();
+			renderer.clipFlags = ClipFlags.ALL;			
 			
 			cube = new Cube(new WireframeMaterial(), 100, "Cube");
 			
@@ -84,36 +89,22 @@ package {
 			
 			var cubeChild1 :Cube = new Cube(new WireframeMaterial(0x00FF00), 100, "blue");
 			cube.addChild( cubeChild1 );
-			cubeChild1.z = 200;
+			cubeChild1.z = 100;
 
 			
 			var cubeChild2 :Cube = new Cube(new WireframeMaterial(0x0000FF), 100, "green");
 			cube.addChild( cubeChild2 );
 			cubeChild2.y = 200;
 			cubeChild2.z = 10;
+			cubeChild1.scaleX = 5;
+			cubeChild1.scaleY = 5;
+			cubeChild1.scaleZ = 0.1;
 			
-			scene = new DisplayObject3D("Scene");
-			scene.addChild( camera );
 			scene.addChild( cube );
 				
-			camera.z = 800;
-			
-			viewport = new Viewport3D(0, 0, true);
-			
-			renderer = new BasicRenderEngine();
-			renderer.clipFlags = ClipFlags.ALL;
-			
-			addChild(viewport);
-			
 			var plane :Plane = new Plane(new WireframeMaterial(0x0000FF), 400, 400, 1, 1, "Plane0");
 			scene.addChild(plane);
-		//	render();
-			camera.y = 500;
-			camera.lookAt(cube.getChildByName("red"));
-			render();
-			//camera.lookAt(cube.getChildByName("red"));
-			render();
-			render();
+
 			addEventListener(Event.ENTER_FRAME, render);
 		}
 		
@@ -129,15 +120,15 @@ package {
 			//cube.getChildByName("blue").x += 0.1;
 			//cube.getChildByName("blue").rotationZ--;
 		//	cube.getChildByName("blue").lookAt( cube.getChildByName("red") );
-			cube.getChildByName("blue").rotationZ += 4;
+			cube.getChildByName("blue").rotationZ += 0.1;
 			
 			cube.getChildByName("blue").transform.eulerAngles.y--;
-			cube.getChildByName("green").lookAt( cube.getChildByName("blue") );
+			cube.getChildByName("green").lookAt( cube.getChildByName("red") );
 			
 			cube.lookAt(cube.getChildByName("blue"));
 			
-			cube.getChildByName("red").transform.eulerAngles.z++;
-		//	cube.getChildByName("red").transform.eulerAngles.y--;
+			cube.getChildByName("red").transform.eulerAngles.z--;
+			cube.getChildByName("red").transform.eulerAngles.y += 4;
 			cube.getChildByName("red").transform.dirty = true;
 		//	cube.getChildByName("red").rotateAround(_s++, new Vector3D(0, _s, _s));
 		//	cube.getChildByName("red").scaleX = 2;
@@ -148,6 +139,7 @@ package {
 			camera.y = 500;
 			camera.z = Math.cos(_r) * 950;
 			_r += Math.PI / 180;
+			_r = _r > Math.PI * 2 ? 0 : _r;
 			
 			camera.lookAt(cube);
 			//camera.lookAt( cube.getChildByName("blue") );

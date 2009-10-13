@@ -266,7 +266,7 @@ package org.papervision3d.core.proto
 				rotate( _eulerAngles, false );
 				_transform.append( _rotation.matrix );
 				
-			//	_transform.prependScale(_localScale.x, _localScale.y, _localScale.z);
+				_transform.prependScale(_localScale.x, _localScale.y, _localScale.z);
 				_dirty = false;
 
 			}		
