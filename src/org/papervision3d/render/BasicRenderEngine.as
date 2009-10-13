@@ -19,6 +19,7 @@ package org.papervision3d.render
 	import org.papervision3d.core.render.draw.list.DrawableList;
 	import org.papervision3d.core.render.draw.list.IDrawableList;
 	import org.papervision3d.core.render.engine.AbstractRenderEngine;
+	import org.papervision3d.core.render.object.ObjectRenderer;
 	import org.papervision3d.core.render.pipeline.BasicPipeline;
 	import org.papervision3d.core.render.raster.DefaultRasterizer;
 	import org.papervision3d.core.render.raster.IRasterizer;
@@ -122,13 +123,14 @@ package org.papervision3d.render
 			
 			stats.totalObjects++;
 			
-			if (object.cullingState == 0 && object.geometry is TriangleGeometry)
+			if (object.cullingState == 0 && object.renderer.geometry is TriangleGeometry)
 			{
 				var triangle :Triangle;
 				var inside :Boolean;
 				var flags :int = 0;
 				
-				geometry = object.geometry as TriangleGeometry;
+				geometry = object.renderer.geometry as TriangleGeometry;
+				var renderer : ObjectRenderer = object.renderer;
 				
 				for each (triangle in geometry.triangles)
 				{
@@ -138,15 +140,15 @@ package org.papervision3d.render
 					stats.totalTriangles++;
 					
 					// get vertices in view / camera space
-					v0.x = geometry.viewVertexData[ triangle.v0.vectorIndexX ];	
-					v0.y = geometry.viewVertexData[ triangle.v0.vectorIndexY ];
-					v0.z = geometry.viewVertexData[ triangle.v0.vectorIndexZ ];
-					v1.x = geometry.viewVertexData[ triangle.v1.vectorIndexX ];	
-					v1.y = geometry.viewVertexData[ triangle.v1.vectorIndexY ];
-					v1.z = geometry.viewVertexData[ triangle.v1.vectorIndexZ ];
-					v2.x = geometry.viewVertexData[ triangle.v2.vectorIndexX ];	
-					v2.y = geometry.viewVertexData[ triangle.v2.vectorIndexY ];
-					v2.z = geometry.viewVertexData[ triangle.v2.vectorIndexZ ];
+					v0.x = renderer.viewVertexData[ triangle.v0.vectorIndexX ];	
+					v0.y = renderer.viewVertexData[ triangle.v0.vectorIndexY ];
+					v0.z = renderer.viewVertexData[ triangle.v0.vectorIndexZ ];
+					v1.x = renderer.viewVertexData[ triangle.v1.vectorIndexX ];	
+					v1.y = renderer.viewVertexData[ triangle.v1.vectorIndexY ];
+					v1.z = renderer.viewVertexData[ triangle.v1.vectorIndexZ ];
+					v2.x = renderer.viewVertexData[ triangle.v2.vectorIndexX ];	
+					v2.y = renderer.viewVertexData[ triangle.v2.vectorIndexY ];
+					v2.z = renderer.viewVertexData[ triangle.v2.vectorIndexZ ];
 					
 					// setup clipflags
 					// first test the near plane as verts behind near project to infinity.
@@ -159,12 +161,12 @@ package org.papervision3d.render
 					
 					// passed the near test loosely, verts may have projected to infinity
 					// we do it here, cause - paranoia - even these array accesses may cost us
-					_sv0.x = geometry.screenVertexData[ triangle.v0.screenIndexX ];	
-					_sv0.y = geometry.screenVertexData[ triangle.v0.screenIndexY ];
-					_sv1.x = geometry.screenVertexData[ triangle.v1.screenIndexX ];	
-					_sv1.y = geometry.screenVertexData[ triangle.v1.screenIndexY ];
-					_sv2.x = geometry.screenVertexData[ triangle.v2.screenIndexX ];	
-					_sv2.y = geometry.screenVertexData[ triangle.v2.screenIndexY ];
+					_sv0.x = renderer.screenVertexData[ triangle.v0.screenIndexX ];	
+					_sv0.y = renderer.screenVertexData[ triangle.v0.screenIndexY ];
+					_sv1.x = renderer.screenVertexData[ triangle.v1.screenIndexX ];	
+					_sv1.y = renderer.screenVertexData[ triangle.v1.screenIndexY ];
+					_sv2.x = renderer.screenVertexData[ triangle.v2.screenIndexX ];	
+					_sv2.y = renderer.screenVertexData[ triangle.v2.screenIndexY ];
 					
 					// when *not* straddling the near plane we can safely test for backfaces
 					// ie: lets not clip backfacing triangles!

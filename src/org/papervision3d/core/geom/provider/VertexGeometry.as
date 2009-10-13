@@ -6,14 +6,16 @@ package org.papervision3d.core.geom.provider
 	
 	public class VertexGeometry extends Geometry
 	{
-		use namespace pv3d;
+	
 		
-		public var vertices :Vector.<Vertex>;
+			public var vertices :Vector.<Vertex>;
 		
-		pv3d var vertexData :Vector.<Number>;
-		pv3d var viewVertexData :Vector.<Number>;
-		pv3d var screenVertexData :Vector.<Number>;
-		pv3d var uvtData :Vector.<Number>;
+		public var uvtData :Vector.<Number>;
+		public var vertexData :Vector.<Number>;
+		
+		
+		public var screenVertexLength : int = 0;
+		 public var viewVertexLength : int = 0;
 		
 		/**
 		 * Constructor
@@ -25,8 +27,6 @@ package org.papervision3d.core.geom.provider
 			vertices = new Vector.<Vertex>();
 			
 			vertexData = new Vector.<Number>();
-			viewVertexData = new Vector.<Number>();
-			screenVertexData = new Vector.<Number>();
 			uvtData = new Vector.<Number>();
 		}
 		
@@ -51,12 +51,16 @@ package org.papervision3d.core.geom.provider
 			{
 				vertex.vertexGeometry = this;
 				
+				
 				vertex.vectorIndexX = vertexData.push(vertex.x) - 1;
 				vertex.vectorIndexY = vertexData.push(vertex.y) - 1;
 				vertex.vectorIndexZ = vertexData.push(vertex.z) - 1;
-				vertex.screenIndexX = screenVertexData.push(vertex.x) - 1;
-				vertex.screenIndexY = screenVertexData.push(vertex.y) - 1;
-				viewVertexData.push(vertex.x, vertex.y, vertex.z);
+				
+				viewVertexLength += 3;
+				vertex.screenIndexX = screenVertexLength;
+				
+				vertex.screenIndexY = screenVertexLength+1;
+				screenVertexLength += 2;
 				uvtData.push(0, 0, 0);
 				vertices.push(vertex);
 				
@@ -137,8 +141,8 @@ package org.papervision3d.core.geom.provider
 			var vertex :Vertex;
 			
 			vertexData.length = 0;
-			viewVertexData.length = 0;
-			screenVertexData.length = 0;
+			viewVertexLength = 0;
+			screenVertexLength = 0;
 			uvtData.length = 0;
 			
 			for each (vertex in vertices)
@@ -146,10 +150,14 @@ package org.papervision3d.core.geom.provider
 				vertex.vectorIndexX = vertexData.push(vertex.x) - 1;
 				vertex.vectorIndexY = vertexData.push(vertex.y) - 1;
 				vertex.vectorIndexZ = vertexData.push(vertex.z) - 1;
-				vertex.screenIndexX = screenVertexData.push(vertex.x) - 1;
-				vertex.screenIndexY = screenVertexData.push(vertex.y) - 1;
-				viewVertexData.push(vertex.x, vertex.y, vertex.z);
+				
+				viewVertexLength += 3;
+				vertex.screenIndexX = screenVertexLength;
+				
+				vertex.screenIndexY = screenVertexLength+1;
+				screenVertexLength += 2;
 				uvtData.push(0, 0, 0);
+				
 			}
 		}
 	}
