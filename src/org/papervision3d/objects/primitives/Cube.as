@@ -15,16 +15,19 @@ package org.papervision3d.objects.primitives
 		/**
 		 * 
 		 */
-		private var triGeometry : TriangleGeometry;
+		 
+		 private var triGeometry : TriangleGeometry;
 		  
 		public function Cube(material:AbstractMaterial, size:Number = 100, name:String=null)
 		{
 			super(name);
 			this.material = material;
-			geometry = triGeometry = new TriangleGeometry();
+			renderer.geometry = triGeometry = new TriangleGeometry();
 			create(size);
 		}
-
+		
+		
+		
 		/**
 		 * 
 		 */ 
@@ -44,7 +47,7 @@ package org.papervision3d.objects.primitives
 			
 			var vertex : Vertex;
 			for each(vertex in v) {
-				this.geometry.addVertex(vertex);
+				this.renderer.geometry.addVertex(vertex);
 			}
 			
 			var uv0 :UVCoord = new UVCoord(0, 1);
@@ -75,6 +78,9 @@ package org.papervision3d.objects.primitives
 			// back
 			triGeometry.addTriangle(new Triangle(material, v[6], v[5], v[4], uv0, uv1, uv2) );
 			triGeometry.addTriangle(new Triangle(material, v[6], v[4], v[7], uv0, uv2, uv3) );
+			
+			renderer.updateIndices();
+			
 		}	
 	}
 }

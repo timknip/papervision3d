@@ -12,6 +12,7 @@ package org.papervision3d.core.render.pipeline
 	import org.papervision3d.core.ns.pv3d;
 	import org.papervision3d.core.proto.Transform3D;
 	import org.papervision3d.core.render.data.RenderData;
+	import org.papervision3d.core.render.object.ObjectRenderer;
 	import org.papervision3d.objects.DisplayObject3D;
 	
 	/**
@@ -136,7 +137,7 @@ package org.papervision3d.core.render.pipeline
 			vt.rawData = wt.rawData;
 			vt.append(camera.viewMatrix);
 			
-			if (object.geometry is VertexGeometry)
+			if (object.renderer.geometry is VertexGeometry)
 			{
 				projectVertices(camera, object);
 			}
@@ -154,11 +155,11 @@ package org.papervision3d.core.render.pipeline
 		{
 			var vt :Matrix3D = object.transform.viewTransform;
 			var st :Matrix3D = object.transform.screenTransform;
-			
+			var renderer : ObjectRenderer = object.renderer;
 			// move the vertices into view / camera space
 			// we'll need the vertices in this space to check whether vertices are behind the camera.
 			// if we move to screen space in one go, screen vertices could move to infinity.
-			vt.transformVectors(object.geometry.vertexData, object.geometry.viewVertexData);
+			vt.transformVectors(renderer.geometry.vertexData, renderer.viewVertexData);
 			
 			// append the projection matrix to the object's view matrix
 			st.rawData = vt.rawData;
@@ -168,7 +169,7 @@ package org.papervision3d.core.render.pipeline
 			// AKA: the perspective divide
 			// NOTE: some vertices may have moved to infinity, we need to check while processing triangles.
 			//       IF so we need to check whether we need to clip the triangles or disgard them.
-			Utils3D.projectVectors(st, object.geometry.vertexData, object.geometry.screenVertexData, object.geometry.uvtData);
+			Utils3D.projectVectors(st, renderer.geometry.vertexData, renderer.screenVertexData, renderer.geometry.uvtData);
 		}
 	}
 }
