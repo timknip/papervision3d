@@ -31,14 +31,12 @@ package org.papervision3d.core.render.draw.items
 			y1 *= hh;
 			x2 *= hw;
 			y2 *= hh;
-			
 		}
 		
 		public function get path():GraphicsTrianglePath{
 			_path.vertices = new Vector.<Number>();
 			_path.vertices.push(x0, y0, x1, y1, x2, y2);
 			return _path;
-			
 		}
 
 	}

@@ -1,5 +1,6 @@
 package org.papervision3d.core.geom
 {
+	import org.papervision3d.core.render.draw.items.IDrawable;
 	import org.papervision3d.materials.AbstractMaterial;
 	
 	public class Line
@@ -15,6 +16,9 @@ package org.papervision3d.core.geom
 		
 		/** */
 		public var material :AbstractMaterial;
+		
+		/** */
+		public var drawable :IDrawable;
 		
 		/**
 		 * 

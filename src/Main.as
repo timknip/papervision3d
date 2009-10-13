@@ -41,6 +41,8 @@ package
 		public var renderer :BasicRenderEngine;
 		public var tf :TextField;
 		
+		public var camera2 :Camera3D;
+		
 		public function Main()
 		{
 			init();
@@ -87,6 +89,7 @@ package
 			cubeChild0.x = 300;
 			//cubeChild0.z = -500;
 			
+			
 			var cubeChild1 :Cube = new Cube(new WireframeMaterial(0x00FF00), 100, "blue");
 			cube.addChild( cubeChild1 );
 			cubeChild1.z = 100;
@@ -101,6 +104,9 @@ package
 			cubeChild1.scaleZ = 0.1;
 			
 			scene.addChild( cube );
+			
+			camera2 = new Camera3D(50, 50, 500);
+			cube.addChild(camera2);
 				
 			var plane :Plane = new Plane(new WireframeMaterial(0x0000FF), 400, 400, 1, 1, "Plane0");
 			scene.addChild(plane);
@@ -113,6 +119,8 @@ package
 		
 		private function render(event:Event=null):void
 		{
+			camera2.frustumGeometry.update(camera2);
+			
 			// rotation in global frame of reference : append
 		//	cube.x ++;
 			cube.rotationY--;
@@ -125,7 +133,7 @@ package
 			cube.getChildByName("blue").transform.eulerAngles.y--;
 			cube.getChildByName("green").lookAt( cube.getChildByName("red") );
 			
-			cube.lookAt(cube.getChildByName("blue"));
+			//cube.lookAt(cube.getChildByName("blue"));
 			
 			cube.getChildByName("red").transform.eulerAngles.z--;
 			cube.getChildByName("red").transform.eulerAngles.y += 4;

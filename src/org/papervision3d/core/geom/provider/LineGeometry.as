@@ -21,17 +21,20 @@ package org.papervision3d.core.geom.provider
 		/**
 		 * 
 		 */ 
-		public function addLine(line:Line):Line
+		public function addLine(line:Line, addVertices:Boolean=true):Line
 		{
 			var index :int = lines.indexOf(line);
 			
 			if (index < 0)
 			{
-				line.v0 = addVertex(line.v0);
-				line.v1 = addVertex(line.v1);
-				if (line.cv0)
+				if (addVertices)
 				{
-					line.cv0 = addVertex(line.cv0);
+					line.v0 = addVertex(line.v0);
+					line.v1 = addVertex(line.v1);
+					if (line.cv0)
+					{
+						line.cv0 = addVertex(line.cv0);
+					}
 				}
 				lines.push(line);
 				return line;	

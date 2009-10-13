@@ -5,7 +5,9 @@ package org.papervision3d.render
 	import flash.geom.Vector3D;
 	
 	import org.papervision3d.cameras.Camera3D;
+	import org.papervision3d.core.geom.Line;
 	import org.papervision3d.core.geom.Triangle;
+	import org.papervision3d.core.geom.provider.LineGeometry;
 	import org.papervision3d.core.geom.provider.TriangleGeometry;
 	import org.papervision3d.core.math.Frustum3D;
 	import org.papervision3d.core.math.Plane3D;
@@ -16,6 +18,7 @@ package org.papervision3d.render
 	import org.papervision3d.core.render.clipping.SutherlandHodgmanClipper;
 	import org.papervision3d.core.render.data.RenderData;
 	import org.papervision3d.core.render.data.RenderStats;
+	import org.papervision3d.core.render.draw.items.LineDrawable;
 	import org.papervision3d.core.render.draw.items.TriangleDrawable;
 	import org.papervision3d.core.render.draw.list.DrawableList;
 	import org.papervision3d.core.render.draw.list.IDrawableList;
@@ -24,6 +27,7 @@ package org.papervision3d.render
 	import org.papervision3d.core.render.raster.DefaultRasterizer;
 	import org.papervision3d.core.render.raster.IRasterizer;
 	import org.papervision3d.objects.DisplayObject3D;
+	import org.papervision3d.objects.primitives.Frustum;
 	import org.papervision3d.view.Viewport3D;
 
 	/**
@@ -232,7 +236,30 @@ package org.papervision3d.render
 					}	
 				}
 			}
-			
+			else if (object.cullingState == 0 && object.geometry is LineGeometry)
+			{
+				var lineGeometry:LineGeometry = LineGeometry(object.geometry);
+				var line :Line;
+					
+				for each (line in lineGeometry.lines)
+				{
+					var lineDrawable :LineDrawable = line.drawable as LineDrawable || new LineDrawable();
+					
+					sv0.x = lineGeometry.screenVertexData[ line.v0.screenIndexX ];	
+					sv0.y = lineGeometry.screenVertexData[ line.v0.screenIndexY ];
+					sv1.x = lineGeometry.screenVertexData[ line.v1.screenIndexX ];	
+					sv1.y = lineGeometry.screenVertexData[ line.v1.screenIndexY ];
+				
+					lineDrawable.x0 = sv0.x;
+					lineDrawable.y0 = sv0.y;
+					lineDrawable.x1 = sv1.x;
+					lineDrawable.y1 = sv1.y;
+					lineDrawable.material = line.material;
+					
+					renderList.addDrawable(lineDrawable);
+				}
+			}
+				
 			// Recurse
 			for each (child in object._children)
 			{
