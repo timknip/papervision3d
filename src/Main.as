@@ -1,5 +1,6 @@
 package 
 {
+	import flash.display.BitmapData;
 	import flash.display.Sprite;
 	import flash.display.StageAlign;
 	import flash.display.StageQuality;
@@ -17,10 +18,10 @@ package
 	import org.papervision3d.core.render.data.RenderData;
 	import org.papervision3d.core.render.data.RenderStats;
 	import org.papervision3d.core.render.pipeline.BasicPipeline;
+	import org.papervision3d.materials.BitmapMaterial;
 	import org.papervision3d.materials.WireframeMaterial;
 	import org.papervision3d.objects.DisplayObject3D;
 	import org.papervision3d.objects.primitives.Cube;
-	import org.papervision3d.objects.primitives.Plane;
 	import org.papervision3d.render.BasicRenderEngine;
 	import org.papervision3d.view.Viewport3D;
 
@@ -82,7 +83,10 @@ package
 			renderer = new BasicRenderEngine();
 			renderer.clipFlags = ClipFlags.ALL;			
 			
-			cube = new Cube(new WireframeMaterial(), 100, "Cube");
+			var bmp:BitmapData = new BitmapData(256, 256);
+			bmp.perlinNoise(256, 256, 2, 300, true, false);
+			
+			cube = new Cube(new BitmapMaterial(bmp), 100, "Cube");
 			
 			var cubeChild0 :Cube = new Cube(new WireframeMaterial(0xFF0000), 100, "red");
 			cube.addChild( cubeChild0 );
