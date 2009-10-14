@@ -6,7 +6,7 @@ package org.papervision3d.core.render.draw.items
 	
 	public class TriangleDrawable extends AbstractDrawable
 	{
-		public var screenZ :Number;
+		
 		public var x0 :Number;
 		public var y0 :Number;
 		public var x1 :Number;

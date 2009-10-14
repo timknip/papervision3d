@@ -88,6 +88,11 @@ package
 			bmp.perlinNoise(256, 256, 2, 300, true, false);
 			
 			cube = new Cube(new BitmapMaterial(bmp), 100, "Cube");
+			
+			
+			var cubeChildx : Cube = new Cube(new BitmapMaterial(new BitmapData(256, 256, true, 0x6600FFFF)), 100);
+			cubeChildx.x = 100;
+			cube.addChild(cubeChildx);
 			//cube = new Cube(new WireframeMaterial(0xFF0000), 100, "Cube");
 			
 			var cubeChild0 :Cube = new Cube(new WireframeMaterial(0xFF0000), 100, "red");
@@ -153,7 +158,7 @@ package
 			camera.x = Math.sin(_r) * 950;
 			camera.y = 500;
 			camera.z = Math.cos(_r) * 950;
-			_r += Math.PI / 180;
+			_r += Math.PI / 180 * 0.25;
 			_r = _r > Math.PI * 2 ? 0 : _r;
 			
 			camera.lookAt(cube);
