@@ -22,13 +22,13 @@ package org.papervision3d.render
 	import org.papervision3d.core.render.draw.items.TriangleDrawable;
 	import org.papervision3d.core.render.draw.list.DrawableList;
 	import org.papervision3d.core.render.draw.list.IDrawableList;
+	import org.papervision3d.core.render.draw.sort.DefaultDrawSorter;
 	import org.papervision3d.core.render.engine.AbstractRenderEngine;
 	import org.papervision3d.core.render.object.ObjectRenderer;
 	import org.papervision3d.core.render.pipeline.BasicPipeline;
 	import org.papervision3d.core.render.raster.DefaultRasterizer;
 	import org.papervision3d.core.render.raster.IRasterizer;
 	import org.papervision3d.objects.DisplayObject3D;
-	import org.papervision3d.objects.primitives.Frustum;
 	import org.papervision3d.view.Viewport3D;
 
 	/**
@@ -67,6 +67,8 @@ package org.papervision3d.render
 		{
 			pipeline = new BasicPipeline();
 			renderList = new DrawableList();
+			renderList.sorter = new DefaultDrawSorter();
+			
 			clipper = new SutherlandHodgmanClipper();
 			rasterizer = new DefaultRasterizer();
 			renderData = new RenderData();
@@ -97,7 +99,7 @@ package org.papervision3d.render
  			_drawablePool.reset();
  			
 			fillRenderList(camera, scene);
-			
+			renderList.sorter.sort();
 			rasterizer.rasterize(renderList, renderData.viewport);
 		}
 		
@@ -271,6 +273,7 @@ package org.papervision3d.render
 					lineDrawable.y0 = sv0.y;
 					lineDrawable.x1 = sv1.x;
 					lineDrawable.y1 = sv1.y;
+					lineDrawable.screenZ = (renderer.viewVertexData[line.v0.vectorIndexZ]+renderer.viewVertexData[line.v1.vectorIndexZ])*0.5;
 					lineDrawable.material = line.material;
 					
 					renderList.addDrawable(lineDrawable);
