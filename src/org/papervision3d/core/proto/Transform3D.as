@@ -37,42 +37,42 @@ package org.papervision3d.core.proto
 		pv3d var scheduledLookAtUp :Vector3D;
 		
 		/** */
-		private var _parent :Transform3D;
+		pv3d var _parent :Transform3D;
 		
 		/** The position of the transform in world space. */
-		private var _position :Vector3D;
+		pv3d var _position :Vector3D;
 		
 		/** Position of the transform relative to the parent transform. */
-		private var _localPosition :Vector3D;
+		pv3d var _localPosition :Vector3D;
 		
 		/** The rotation as Euler angles in degrees. */
-		private var _eulerAngles :Vector3D;
+		pv3d var _eulerAngles :Vector3D;
 		
 		/** The rotation as Euler angles in degrees relative to the parent transform's rotation. */
-		private var _localEulerAngles :Vector3D;
+		pv3d var _localEulerAngles :Vector3D;
 		
 		/** The X axis of the transform in world space */
-		private var _right :Vector3D;
+		pv3d var _right :Vector3D;
 		
 		/** The Y axis of the transform in world space */
-		private var _up :Vector3D;
+		pv3d var _up :Vector3D;
 		
 		/** The Z axis of the transform in world space */
-		private var _forward :Vector3D;
+		pv3d var _forward :Vector3D;
 		
 		/** The rotation of the transform in world space stored as a Quaternion. */
-		private var _rotation :Quaternion;
+		pv3d var _rotation :Quaternion;
 		
 		/** The rotation of the transform relative to the parent transform's rotation. */
-		private var _localRotation :Quaternion;
+		pv3d var _localRotation :Quaternion;
 		
 		/** */
-		private var _localScale :Vector3D;
+		pv3d var _localScale :Vector3D;
 		
-		private var _transform :Matrix3D;
-		private var _localTransform :Matrix3D;
+		pv3d var _transform :Matrix3D;
+		pv3d var _localTransform :Matrix3D;
 		
-		private var _dirty :Boolean;
+		pv3d var _dirty :Boolean;
 		
 		/**
 		 * 

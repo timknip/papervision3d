@@ -73,7 +73,8 @@ package org.papervision3d.core.render.pipeline
 				var eye :Vector3D = transform.position;
 				var tgt :Vector3D = transform.scheduledLookAt.position;
 				var up :Vector3D = transform.scheduledLookAtUp;
-					
+				var components :Vector.<Vector3D>;
+				
 				// create the lookAt matrix
 				MatrixUtil.createLookAtMatrix(eye, tgt, up, _lookAtMatrix);
 						
@@ -87,7 +88,7 @@ package org.papervision3d.core.render.pipeline
 					object.transform.worldTransform.append(_invWorldMatrix);
 				}
 				
-				var components :Vector.<Vector3D> = object.transform.worldTransform.decompose();
+				components = object.transform.worldTransform.decompose();
 				var euler :Vector3D = components[1];
 				
 				object.transform.localEulerAngles.x = -euler.x * MathUtil.TO_DEGREES;
