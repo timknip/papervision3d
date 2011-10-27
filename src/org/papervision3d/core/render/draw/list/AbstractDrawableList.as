@@ -6,7 +6,7 @@ package org.papervision3d.core.render.draw.list
 	public class AbstractDrawableList implements IDrawableList
 	{
 		protected var _sorter : IDrawSorter;
-		
+
 		public function AbstractDrawableList()
 		{
 		}
@@ -14,24 +14,24 @@ package org.papervision3d.core.render.draw.list
 		public function addDrawable(drawable:AbstractDrawable):void
 		{
 		}
-		
+
 		public function clear():void
 		{
 		}
-		
+
 		public function get drawables():Vector.<AbstractDrawable>
 		{
 			return null;
 		}
-		
+
 		public function set sorter(sorter:IDrawSorter):void{
 			_sorter = sorter;
 			_sorter.drawlist = this;
 		}
-		
+
 		public function get sorter():IDrawSorter{
 			return _sorter;
 		}
-		
+
 	}
 }

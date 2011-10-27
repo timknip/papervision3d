@@ -1,30 +1,30 @@
 package org.papervision3d.core.geom.provider
 {
 	import org.papervision3d.core.geom.Line;
-	
+
 	/**
-	 * 
-	 */ 
+	 *
+	 */
 	public class LineGeometry extends VertexGeometry
 	{
 		public var lines :Vector.<Line>;
-		 
+
 		/**
-		 * 
-		 */ 
+		 *
+		 */
 		public function LineGeometry(name:String=null)
 		{
 			super(name);
 			this.lines = new Vector.<Line>();
 		}
-		
+
 		/**
-		 * 
-		 */ 
+		 *
+		 */
 		public function addLine(line:Line, addVertices:Boolean=true):Line
 		{
 			var index :int = lines.indexOf(line);
-			
+
 			if (index < 0)
 			{
 				if (addVertices)
@@ -37,11 +37,11 @@ package org.papervision3d.core.geom.provider
 					}
 				}
 				lines.push(line);
-				return line;	
+				return line;
 			}
 			else
 			{
-				return lines[index];	
+				return lines[index];
 			}
 		}
 	}
