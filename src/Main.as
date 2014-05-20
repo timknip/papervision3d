@@ -1,4 +1,4 @@
-package 
+package
 {
 	import flash.display.BitmapData;
 	import flash.display.Sprite;
@@ -8,9 +8,9 @@ package
 	import flash.events.Event;
 	import flash.text.TextField;
 	import flash.text.TextFormat;
-	
+
 	import net.hires.debug.Stats;
-	
+
 	import org.papervision3d.cameras.Camera3D;
 	import org.papervision3d.core.geom.provider.VertexGeometry;
 	import org.papervision3d.core.ns.pv3d;
@@ -26,11 +26,11 @@ package
 	import org.papervision3d.view.Viewport3D;
 
 	[SWF (backgroundColor="#000000")]
-	
+
 	public class Main extends Sprite
 	{
 		use namespace pv3d;
-		
+
 		public var container :Sprite;
 		public var vertexGeometry :VertexGeometry;
 		public var cube :Cube;
@@ -41,21 +41,21 @@ package
 		public var renderData :RenderData;
 		public var renderer :BasicRenderEngine;
 		public var tf :TextField;
-		
+
 		public var camera2 :Camera3D;
-		
+
 		public function Main()
 		{
 			init();
 		}
-		
+
 		private function init():void
 		{
 			stage.align = StageAlign.TOP_LEFT;
 			stage.scaleMode = StageScaleMode.NO_SCALE;
 			stage.frameRate = 60;
 			stage.quality = StageQuality.LOW;
-			
+
 			// Thanks doob!
 			addChild(new Stats());
 
@@ -69,12 +69,12 @@ package
 			tf.selectable = false;
 			tf.multiline = true;
 			tf.text = "Papervision3D - version 3.0";
-			
+
 			viewport = new Viewport3D(0, 0, true);
 			addChild(viewport);
-			
+
 			scene = new DisplayObject3D("Scene");
-			
+
 			camera = new Camera3D(30, 400, 2300, "Camera01");
 			scene.addChild( camera );
 			camera.enableCulling = false
@@ -82,30 +82,30 @@ package
 			camera.z = 800;
 
 			renderer = new BasicRenderEngine();
-			renderer.clipFlags = ClipFlags.ALL;			
-			
+			renderer.clipFlags = ClipFlags.ALL;
+
 			var bmp:BitmapData = new BitmapData(256, 256);
 			bmp.perlinNoise(256, 256, 2, 300, true, false);
-			
+
 			cube = new Cube(new BitmapMaterial(bmp), 100, "Cube");
-			
-			
+
+
 			var cubeChildx : Cube = new Cube(new BitmapMaterial(new BitmapData(256, 256, true, 0x6600FFFF)), 100);
 			cubeChildx.x = 100;
 			cube.addChild(cubeChildx);
 			//cube = new Cube(new WireframeMaterial(0xFF0000), 100, "Cube");
-			
+
 			var cubeChild0 :Cube = new Cube(new WireframeMaterial(0xFF0000), 100, "red");
 			cube.addChild( cubeChild0 );
 			cubeChild0.x = 300;
 			//cubeChild0.z = -500;
-			
-			
+
+
 			var cubeChild1 :Cube = new Cube(new WireframeMaterial(0x00FF00), 100, "blue");
 			cube.addChild( cubeChild1 );
 			cubeChild1.z = 100;
 
-			
+
 			var cubeChild2 :Cube = new Cube(new WireframeMaterial(0x0000FF), 100, "green");
 			cube.addChild( cubeChild2 );
 			cubeChild2.y = 200;
@@ -113,9 +113,9 @@ package
 			cubeChild1.scaleX = 5;
 			cubeChild1.scaleY = 5;
 			cubeChild1.scaleZ = 0.1;
-			
+
 			scene.addChild( cube );
-			
+
 			camera2 = new Camera3D(50, 50, 500);
 			cube.addChild(camera2);
 			camera2.showFrustum = true;
@@ -125,28 +125,28 @@ package
 
 			addEventListener(Event.ENTER_FRAME, render);
 		}
-		
+
 		private var _r :Number = 0;
 		private var _s :Number = 0;
-		 
+
 		private function render(event:Event=null):void
 		{
 			camera2.frustumGeometry.update(camera2);
-			
+
 			// rotation in global frame of reference : append
 		//	cube.x ++;
 			cube.rotationY--;
-			
+
 			//cube.getChildByName("blue").x += 0.1;
 			//cube.getChildByName("blue").rotationZ--;
 		//	cube.getChildByName("blue").lookAt( cube.getChildByName("red") );
 			cube.getChildByName("blue").rotationZ += 0.1;
-			
+
 			cube.getChildByName("blue").transform.eulerAngles.y--;
 			cube.getChildByName("green").lookAt( cube.getChildByName("red") );
-			
+
 			//cube.lookAt(cube.getChildByName("blue"));
-			
+
 			cube.getChildByName("red").transform.eulerAngles.z--;
 			cube.getChildByName("red").transform.eulerAngles.y += 4;
 			cube.getChildByName("red").transform.dirty = true;
@@ -154,28 +154,28 @@ package
 		//	cube.getChildByName("red").scaleX = 2;
 		//	cube.getChildByName("red").rotateAround(_s, new Vector3D(0, -_s, 0));
 		//	cube.getChildByName("green").rotateAround(_r++, Vector3D.X_AXIS);
-			
+
 			camera.x = Math.sin(_r) * 950;
 			camera.y = 500;
 			camera.z = Math.cos(_r) * 950;
 			_r += Math.PI / 180 * 0.25;
 			_r = _r > Math.PI * 2 ? 0 : _r;
-			
+
 			camera.lookAt(cube);
 			//camera.lookAt( cube.getChildByName("blue") );
 			//trace(cube.getChildByName("red").transform.position);
-			
-			renderer.renderScene(scene, camera, viewport);	
-			
+
+			renderer.renderScene(scene, camera, viewport);
+
 			var stats :RenderStats = renderer.renderData.stats;
-			
+
 			tf.text = "Papervision3D - version 3.0\n" +
 				"\ntotal objects: " + stats.totalObjects +
 				"\nculled objects: " + stats.culledObjects +
 				"\n\ntotal triangles: " + stats.totalTriangles +
 				"\nculled triangles: " + stats.culledTriangles +
 				"\nclipped triangles: " + stats.clippedTriangles;
-			
+
 		}
 	}
 }
